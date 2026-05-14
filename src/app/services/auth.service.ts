@@ -8,6 +8,15 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+  age: number;
+  gender: string;
+  address: string;
+}
+
 export interface LoginResponse {
   statusCode: number;
   error: string | null;
@@ -46,13 +55,12 @@ export class AuthService {
     );
   }
 
+  register(body: RegisterRequest): Observable<any> {
+    return this.http.post<any>(API_ENDPOINTS.auth.register, body);
+  }
+
   getAccount(): Observable<AccountResponse> {
-    const token = this.canUseStorage() ? window.localStorage.getItem(ACCESS_TOKEN_KEY) : null;
-    let headers = new HttpHeaders();
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
-    return this.http.get<{ data: AccountResponse }>(API_ENDPOINTS.auth.account, { headers }).pipe(
+    return this.http.get<{ data: AccountResponse }>(API_ENDPOINTS.auth.account).pipe(
       map((res) => res.data)
     );
   }
