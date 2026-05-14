@@ -1,0 +1,133 @@
+<main class="register-page">
+  <section class="register-card" aria-labelledby="register-title">
+    <header class="register-header">
+      <div class="register-icon" aria-hidden="true">
+        <svg
+          class="register-icon__graphic"
+          width="28"
+          height="28"
+          viewBox="0 0 28 28"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M14 15.75C16.4162 15.75 18.375 13.7912 18.375 11.375C18.375 8.95875 16.4162 7 14 7C11.5838 7 9.625 8.95875 9.625 11.375C9.625 13.7912 11.5838 15.75 14 15.75Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M6.125 23.625C7.30625 20.5625 10.2812 18.375 14 18.375C17.7188 18.375 20.6938 20.5625 21.875 23.625"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M14 25.375C20.2822 25.375 25.375 20.2822 25.375 14C25.375 7.71776 20.2822 2.625 14 2.625C7.71776 2.625 2.625 7.71776 2.625 14C2.625 20.2822 7.71776 25.375 14 25.375Z"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+        </svg>
+      </div>
+
+      <h1 class="register-title" id="register-title">Create Job Seeker Account</h1>
+      <p class="register-subtitle">Start your journey to find your dream job</p>
+    </header>
+
+    <form class="register-form" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="form-field">
+        <label class="form-label" for="name">Name</label>
+        <input
+          class="form-input"
+          id="name"
+          type="text"
+          formControlName="name"
+          placeholder="Nguyen Van A"
+          autocomplete="name"
+        />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="email">Email</label>
+        <input
+          class="form-input"
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="you@example.com"
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="password">Password</label>
+        <input
+          class="form-input"
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="Create a password"
+          autocomplete="new-password"
+        />
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label" for="age">Age</label>
+          <input
+            class="form-input"
+            id="age"
+            type="number"
+            formControlName="age"
+            placeholder="18"
+            min="0"
+          />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="gender">Gender</label>
+          <select class="form-input" id="gender" formControlName="gender">
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="address">Address</label>
+        <input
+          class="form-input"
+          id="address"
+          type="text"
+          formControlName="address"
+          placeholder="Enter your address"
+          autocomplete="street-address"
+        />
+      </div>
+
+      <button class="primary-button" type="submit">Create Account</button>
+    </form>
+
+    <div class="divider" aria-hidden="true">
+      <span class="divider__text">OR</span>
+    </div>
+
+    <div class="social-register" aria-label="Social registration options">
+      <button class="social-button" type="button">Google</button>
+      <button class="social-button" type="button">LinkedIn</button>
+    </div>
+
+    <footer class="register-footer">
+      <p>
+        Already have an account?
+        <a class="text-link" routerLink="/login">Sign in</a>
+      </p>
+      <p>
+        Looking to hire?
+        <a class="text-link" routerLink="/register-employer">Register as Employer</a>
+      </p>
+    </footer>
+  </section>
+</main>

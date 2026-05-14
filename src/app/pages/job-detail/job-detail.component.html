@@ -1,0 +1,114 @@
+<main class="job-detail-page">
+  <app-dashboard-header />
+
+  <section class="job-detail" aria-labelledby="job-detail-title">
+    <div class="job-detail__container">
+      <a class="back-link" routerLink="/find-jobs">
+        <i-lucide class="back-link__icon" name="arrow-left" aria-hidden="true" />
+        <span>Back to Jobs</span>
+      </a>
+
+      <div class="job-detail__layout">
+        <div class="job-detail__main">
+          <app-card>
+            <div class="job-hero-card">
+              <div class="job-hero-card__logo" aria-hidden="true">{{ job.initials }}</div>
+
+              <div class="job-hero-card__content">
+                <h1 class="job-hero-card__title" id="job-detail-title">{{ job.title }}</h1>
+                <p class="job-hero-card__company">{{ job.company }}</p>
+
+                <div class="job-hero-card__meta">
+                  <span class="job-meta-item">
+                    <i-lucide class="job-meta-item__icon" name="map-pin" aria-hidden="true" />
+                    <span>{{ job.location }}</span>
+                  </span>
+                  <span class="job-meta-item">
+                    <i-lucide class="job-meta-item__icon" name="dollar-sign" aria-hidden="true" />
+                    <span>{{ job.salary }}</span>
+                  </span>
+                  <span class="job-meta-item">
+                    <i-lucide class="job-meta-item__icon" name="clock" aria-hidden="true" />
+                    <span>{{ job.postedAt }}</span>
+                  </span>
+                </div>
+
+                <div class="job-hero-card__tags" aria-label="Job tags">
+                  @for (tag of job.tags; track tag; let isFirst = $first) {
+                    <app-badge [variant]="isFirst ? 'default' : 'outline'">{{ tag }}</app-badge>
+                  }
+                </div>
+              </div>
+            </div>
+          </app-card>
+
+          <app-card cardTitle="Job Description" titleId="job-description-title">
+            <section class="description-section" aria-labelledby="about-role-title">
+              <h3 class="description-section__title" id="about-role-title">About the Role</h3>
+              <p class="description-section__text">{{ job.aboutRole }}</p>
+            </section>
+
+            <section class="description-section" aria-labelledby="responsibilities-title">
+              <h3 class="description-section__title" id="responsibilities-title">
+                Key Responsibilities
+              </h3>
+              <ul class="description-list">
+                @for (responsibility of job.responsibilities; track responsibility) {
+                  <li>{{ responsibility }}</li>
+                }
+              </ul>
+            </section>
+
+            <section class="description-section" aria-labelledby="qualifications-title">
+              <h3 class="description-section__title" id="qualifications-title">
+                Required Qualifications
+              </h3>
+              <ul class="description-list">
+                @for (qualification of job.qualifications; track qualification) {
+                  <li>{{ qualification }}</li>
+                }
+              </ul>
+            </section>
+          </app-card>
+        </div>
+
+        <aside class="job-detail__sidebar" aria-label="Job actions and company details">
+          <app-card class="action-card" ariaLabel="Apply for job">
+            <app-button variant="primary" [fullWidth]="true" (buttonClick)="onApply()">
+              Apply Now
+            </app-button>
+
+            <div class="action-card__secondary-actions">
+              <app-button [fullWidth]="true" (buttonClick)="onSave()">
+                <i-lucide class="button-icon" name="bookmark" aria-hidden="true" />
+                <span>Save</span>
+              </app-button>
+              <app-button [fullWidth]="true" (buttonClick)="onShare()">
+                <i-lucide class="button-icon" name="share-2" aria-hidden="true" />
+                <span>Share</span>
+              </app-button>
+            </div>
+          </app-card>
+
+          <app-card cardTitle="About the Company" titleId="company-profile-title">
+            <app-company-info
+              [company]="companyInfo"
+              headingLevel="h3"
+              variant="compact"
+            />
+            <app-button [fullWidth]="true" (buttonClick)="onViewCompanyProfile()">
+              View Company Profile
+            </app-button>
+          </app-card>
+
+          <app-quick-stats
+            title="Job Summary"
+            titleId="job-summary-title"
+            variant="summary"
+            [items]="summaryItems"
+          />
+        </aside>
+      </div>
+    </div>
+  </section>
+</main>

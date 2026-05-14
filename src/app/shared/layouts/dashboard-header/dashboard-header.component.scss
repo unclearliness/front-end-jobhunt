@@ -1,0 +1,235 @@
+/* Dashboard Header Component Styles */
+
+:host {
+  display: block;
+  font-size: var(--font-size);
+  line-height: 1.5;
+}
+
+.dashboard-header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.dashboard-header__container {
+  max-width: 1200px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Brand */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--foreground);
+  font-size: 20px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  text-decoration: none;
+  transition: opacity 200ms ease;
+}
+
+.brand:hover {
+  opacity: 0.8;
+}
+
+.brand__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-size: 20px;
+}
+
+.brand__name {
+  color: var(--foreground);
+}
+
+/* Navigation */
+.dashboard-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex: 1;
+}
+
+.dashboard-nav__link {
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+
+.dashboard-nav__link:hover {
+  color: var(--primary);
+}
+
+/* Actions */
+.dashboard-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.dashboard-actions__login {
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+
+.dashboard-actions__login:hover {
+  color: var(--primary);
+}
+
+.dashboard-actions__signup {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  color: var(--primary-foreground);
+  background: var(--primary);
+  border-radius: var(--radius-lg);
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  text-decoration: none;
+  transition: all 200ms ease;
+  border: 1px solid var(--primary);
+}
+
+.dashboard-actions__signup:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.dashboard-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dashboard-user__avatar {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  color: var(--foreground);
+  background: var(--secondary);
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+}
+
+.dashboard-user__meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-user__name {
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.2;
+}
+
+.dashboard-user__role {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: var(--font-weight-normal);
+  line-height: 1.2;
+}
+
+.dashboard-actions__logout {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  color: var(--foreground);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.dashboard-actions__logout:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .dashboard-header__container {
+    height: auto;
+    flex-wrap: wrap;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .dashboard-nav {
+    flex: 0 1 auto;
+  }
+
+  .dashboard-actions {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header__container {
+    padding-left: 16px;
+    padding-right: 16px;
+    gap: 12px;
+  }
+
+  .dashboard-nav {
+    width: 100%;
+    order: 3;
+    justify-content: flex-start;
+    gap: 16px;
+  }
+
+  .dashboard-nav__link {
+    font-size: 14px;
+  }
+
+  .dashboard-actions {
+    gap: 8px;
+  }
+
+  .dashboard-actions__signup,
+  .dashboard-actions__logout {
+    padding: 0 12px;
+    font-size: 14px;
+  }
+
+  .dashboard-user__role {
+    display: none;
+  }
+}

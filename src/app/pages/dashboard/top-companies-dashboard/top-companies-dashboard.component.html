@@ -1,0 +1,18 @@
+<section class="top-companies" aria-labelledby="top-companies-title">
+  <div class="top-companies__container">
+    <header class="top-companies__header">
+      <div class="top-companies__heading">
+        <h2 class="top-companies__title" id="top-companies-title">Top Companies</h2>
+        <p class="top-companies__subtitle">Leading companies hiring on JobHunter</p>
+      </div>
+
+      <app-button (buttonClick)="onViewAllCompanies()">View All Companies</app-button>
+    </header>
+
+    <div class="company-grid">
+      @for (company of companies; track company.id) {
+        <app-company-card [company]="company" (viewCompany)="onViewCompany($event)" />
+      }
+    </div>
+  </div>
+</section>

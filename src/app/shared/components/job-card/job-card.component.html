@@ -1,0 +1,65 @@
+<article class="job-card" [class.job-card--search]="appearance === 'search'">
+  <header class="job-card__header">
+    <div class="job-card__logo" aria-hidden="true">{{ job.initials }}</div>
+
+    <div class="job-card__titles">
+      <h3 class="job-card__title">{{ job.title }}</h3>
+      <p class="job-card__company">{{ job.company }}</p>
+    </div>
+
+    @if (appearance === 'search') {
+      <button class="job-card__bookmark" type="button" aria-label="Save job">
+        <i-lucide class="job-card__bookmark-icon" name="bookmark" aria-hidden="true" />
+      </button>
+    }
+  </header>
+
+  @if (appearance === 'search' && job.description) {
+    <p class="job-card__description">{{ job.description }}</p>
+  }
+
+  <div class="job-card__body">
+    <div class="job-card__detail">
+      <i-lucide class="job-card__detail-icon" name="map-pin" aria-hidden="true" />
+      <span>{{ job.location }}</span>
+    </div>
+
+    <div class="job-card__detail">
+      <i-lucide class="job-card__detail-icon" name="dollar-sign" aria-hidden="true" />
+      <span>{{ job.salary }}</span>
+    </div>
+
+    @if (appearance === 'search') {
+      <div class="job-card__detail">
+        <i-lucide class="job-card__detail-icon" name="clock" aria-hidden="true" />
+        <span>{{ job.timePosted }}</span>
+      </div>
+    }
+  </div>
+
+  @if (appearance === 'featured') {
+    <div class="job-card__meta">
+      <app-badge>{{ job.type }}</app-badge>
+      <span class="job-card__time">
+        <i-lucide class="job-card__time-icon" name="clock" aria-hidden="true" />
+        <span>{{ job.timePosted }}</span>
+      </span>
+    </div>
+  } @else if (job.tags?.length) {
+    <div class="job-card__tags">
+      @for (tag of job.tags; track tag) {
+        <app-badge variant="outline">{{ tag }}</app-badge>
+      }
+    </div>
+  }
+
+  <footer class="job-card__footer">
+    <app-button
+      [variant]="appearance === 'search' ? 'primary' : 'outline'"
+      [fullWidth]="true"
+      (buttonClick)="onViewDetails()"
+    >
+      View Details
+    </app-button>
+  </footer>
+</article>

@@ -1,0 +1,18 @@
+<section class="featured-jobs" aria-labelledby="featured-jobs-title">
+  <div class="featured-jobs__container">
+    <header class="featured-jobs__header">
+      <div class="featured-jobs__heading">
+        <h2 class="featured-jobs__title" id="featured-jobs-title">Featured Jobs</h2>
+        <p class="featured-jobs__subtitle">Hand-picked opportunities just for you</p>
+      </div>
+
+      <app-button (buttonClick)="onViewAllJobs()">View All Jobs</app-button>
+    </header>
+
+    <div class="job-grid">
+      @for (job of jobs; track job.id) {
+        <app-job-card [job]="job" (viewDetails)="onViewDetails($event)" />
+      }
+    </div>
+  </div>
+</section>

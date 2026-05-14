@@ -1,0 +1,79 @@
+/* Badge Component Styles */
+
+:host {
+  display: inline-flex;
+}
+
+.app-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 4px 12px;
+  color: var(--primary-foreground);
+  background: var(--primary);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+/* Default Badge */
+.app-badge--default {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* Secondary Badge */
+.app-badge--secondary {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-color: var(--border);
+}
+
+/* Outline Badge */
+.app-badge--outline {
+  background: transparent;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+/* Destructive Badge */
+.app-badge--destructive {
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+}
+
+/* Success Badge */
+.app-badge--success {
+  background: var(--success);
+  color: var(--success-foreground);
+}
+
+/* Custom Color Badges */
+.app-badge--blue {
+  background: #e0f2fe;
+  color: #1e40af;
+}
+
+.app-badge--green {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.app-badge--yellow {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.app-badge--purple {
+  background: #f3e8ff;
+  color: #581c87;
+}
+
+.app-badge--red {
+  background: #fee2e2;
+  color: #991b1b;
+}

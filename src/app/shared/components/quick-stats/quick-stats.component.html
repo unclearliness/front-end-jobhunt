@@ -1,0 +1,34 @@
+<app-card [cardTitle]="title" [titleId]="titleId">
+  <div class="quick-stats" [class.quick-stats--summary]="variant === 'summary'">
+    @for (item of items; track item.label) {
+      <div class="quick-stats__item">
+        @if (variant === 'stats' && item.icon) {
+          <span class="quick-stats__icon" aria-hidden="true">
+            @switch (item.icon) {
+              @case ('users') {
+                <i-lucide name="users" />
+              }
+              @case ('briefcase') {
+                <i-lucide name="briefcase-business" />
+              }
+              @case ('calendar') {
+                <i-lucide name="calendar" />
+              }
+              @case ('dollar') {
+                <i-lucide name="dollar-sign" />
+              }
+              @case ('location') {
+                <i-lucide name="map-pin" />
+              }
+            }
+          </span>
+        }
+
+        <span class="quick-stats__content">
+          <span class="quick-stats__label">{{ item.label }}</span>
+          <span class="quick-stats__value">{{ item.value }}</span>
+        </span>
+      </div>
+    }
+  </div>
+</app-card>

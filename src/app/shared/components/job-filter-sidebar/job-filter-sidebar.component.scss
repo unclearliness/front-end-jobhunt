@@ -1,0 +1,111 @@
+/* Job Filter Sidebar Component Styles */
+
+:host {
+  display: block;
+}
+
+.job-filters {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+/* Header */
+.job-filters__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.job-filters__icon {
+  width: 20px;
+  height: 20px;
+  color: var(--foreground);
+  flex: 0 0 auto;
+}
+
+.job-filters__title {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+/* Filter Groups Container */
+.job-filters__groups {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Filter Group */
+.job-filter-group {
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.job-filter-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.job-filter-group__title {
+  margin: 0 0 12px;
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+.job-filter-group__options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Filter Option */
+.job-filter-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 22px;
+  padding: 0;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.job-filter-option:hover .job-filter-option__label {
+  color: var(--primary);
+}
+
+.job-filter-option__input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.job-filter-option__label {
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  cursor: pointer;
+  user-select: none;
+}
+
+.job-filters__actions {
+  margin-top: 24px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .job-filters {
+    padding: 24px;
+  }
+}

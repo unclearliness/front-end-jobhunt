@@ -1,0 +1,106 @@
+/* Employer CTA Dashboard Component Styles */
+
+:host {
+  display: block;
+  font-size: var(--font-size);
+  line-height: 1.5;
+}
+
+.employer-cta {
+  width: 100%;
+  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
+  padding: 72px 24px;
+}
+
+.employer-cta__container {
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Title */
+.employer-cta__title {
+  margin: 0 0 12px;
+  color: var(--primary-foreground);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* Subtitle */
+.employer-cta__subtitle {
+  margin: 0 0 32px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 18px;
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
+}
+
+/* Button */
+.employer-cta__button {
+  height: 44px;
+  padding: 0 24px;
+  color: var(--primary);
+  background: var(--primary-foreground);
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.employer-cta__button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+.employer-cta__button:active {
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .employer-cta {
+    padding: 48px 24px;
+  }
+
+  .employer-cta__title {
+    font-size: 28px;
+  }
+
+  .employer-cta__subtitle {
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+
+  .employer-cta__button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .employer-cta {
+    padding: 40px 16px;
+  }
+
+  .employer-cta__title {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+
+  .employer-cta__subtitle {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .employer-cta__button {
+    height: 40px;
+    font-size: 14px;
+  }
+}

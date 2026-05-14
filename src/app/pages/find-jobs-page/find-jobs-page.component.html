@@ -1,0 +1,45 @@
+<main class="find-jobs-page">
+  <app-dashboard-header />
+
+  <app-job-search-banner
+    title="Find Your Next Opportunity"
+    searchPlaceholder="Job title or keyword"
+    locationPlaceholder="Location"
+    (searchSubmitted)="onSearchSubmitted()"
+  />
+
+  <section class="find-jobs-content" aria-label="Job search results">
+    <div class="find-jobs-content__container">
+      <app-job-filter-sidebar
+        class="find-jobs-content__sidebar"
+        [filterGroups]="filterGroups"
+        (filtersReset)="onFiltersReset()"
+      />
+
+      <div class="find-jobs-content__results">
+        <header class="results-header">
+          <p class="results-header__count">{{ jobs.length }} jobs found</p>
+
+          <label class="results-header__sort">
+            <span class="results-header__sort-label">Sort jobs</span>
+            <select class="results-header__select" aria-label="Sort jobs">
+              <option>Most Recent</option>
+              <option>Salary: High to Low</option>
+              <option>Salary: Low to High</option>
+            </select>
+          </label>
+        </header>
+
+        <div class="job-results-list">
+          @for (job of jobs; track job.id) {
+            <app-job-card
+              [job]="job"
+              appearance="search"
+              (viewDetails)="onViewDetails($event)"
+            />
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+</main>

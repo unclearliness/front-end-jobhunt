@@ -1,0 +1,140 @@
+/* Company Card Component Styles */
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.company-card {
+  min-height: 366px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  transition: all 200ms ease;
+}
+
+.company-card:hover {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+  border-color: rgba(37, 99, 235, 0.35);
+}
+
+/* Logo Section */
+.company-card__logo {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  background: rgba(37, 99, 235, 0.1);
+  border-radius: var(--radius-lg);
+  flex: 0 0 auto;
+}
+
+.company-card__logo-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--primary);
+}
+
+.company-card__logo-text {
+  color: var(--primary);
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+/* Name */
+.company-card__name {
+  margin: 0 0 8px;
+  color: var(--foreground);
+  font-size: 18px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+/* Location */
+.company-card__location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 24px;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
+}
+
+.company-card__location-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  color: var(--muted-foreground);
+}
+
+/* Industry */
+.company-card__industry {
+  width: fit-content;
+  margin: 0 0 16px;
+  padding: 2px 8px;
+  color: var(--foreground);
+  background: var(--secondary);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+/* Description */
+.company-card__description {
+  display: -webkit-box;
+  margin: 0 0 16px;
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  flex: 1 1 auto;
+}
+
+/* Open Jobs */
+.company-card__open-jobs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 24px;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+.company-card__open-jobs-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--primary);
+  flex: 0 0 auto;
+}
+
+/* Footer */
+.company-card__footer {
+  display: flex;
+  margin-top: auto;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .company-card {
+    min-height: auto;
+  }
+
+  .company-card__name {
+    font-size: 16px;
+  }
+}

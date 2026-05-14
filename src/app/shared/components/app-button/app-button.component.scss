@@ -1,0 +1,137 @@
+/* Button Component Styles */
+
+:host {
+  display: inline-flex;
+}
+
+:host:has(.app-button--full) {
+  width: 100%;
+}
+
+.app-button {
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  gap: 8px;
+  color: var(--foreground);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  font-size: 16px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+
+/* Primary Button */
+.app-button--primary {
+  color: var(--primary-foreground);
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.app-button--primary:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.app-button--primary:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Secondary Button */
+.app-button--secondary {
+  color: var(--foreground);
+  background: var(--muted);
+  border-color: var(--border);
+}
+
+.app-button--secondary:hover {
+  background: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Outline Button */
+.app-button--outline {
+  color: var(--foreground);
+  background: transparent;
+  border-color: var(--border);
+}
+
+.app-button--outline:hover {
+  background: var(--muted);
+  border-color: var(--border);
+}
+
+/* Ghost Button */
+.app-button--ghost {
+  color: var(--foreground);
+  background: transparent;
+  border-color: transparent;
+}
+
+.app-button--ghost:hover {
+  background: var(--muted);
+}
+
+/* Destructive Button */
+.app-button--destructive {
+  color: var(--destructive-foreground);
+  background: var(--destructive);
+  border-color: var(--destructive);
+}
+
+.app-button--destructive:hover {
+  background: #be0e34;
+  box-shadow: 0 4px 12px rgba(212, 24, 61, 0.3);
+}
+
+/* Sizes */
+.app-button--sm {
+  height: 36px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.app-button--lg {
+  height: 48px;
+  padding: 0 20px;
+  font-size: 18px;
+}
+
+.app-button--icon {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: var(--radius-lg);
+}
+
+.app-button--compact {
+  height: 40px;
+}
+
+.app-button--full {
+  width: 100%;
+}
+
+/* Disabled State */
+.app-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Inverse (for compatibility) */
+.app-button--inverse {
+  color: var(--primary);
+  background: var(--background);
+  border-color: var(--border);
+}
+
+.app-button--inverse:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}

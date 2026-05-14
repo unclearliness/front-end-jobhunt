@@ -1,0 +1,47 @@
+<div class="company-info" [class.company-info--compact]="variant === 'compact'">
+  <div class="company-info__logo" aria-hidden="true">{{ company.initials }}</div>
+
+  <div class="company-info__body">
+    @switch (headingLevel) {
+      @case ('h1') {
+        <h1 class="company-info__name">{{ company.name }}</h1>
+      }
+      @case ('h3') {
+        <h3 class="company-info__name">{{ company.name }}</h3>
+      }
+      @default {
+        <h2 class="company-info__name">{{ company.name }}</h2>
+      }
+    }
+
+    @if (company.location || company.websiteLabel) {
+      <div class="company-info__meta">
+        @if (company.location) {
+          <span class="company-info__meta-item">
+            <i-lucide class="company-info__meta-icon" name="map-pin" aria-hidden="true" />
+            <span>{{ company.location }}</span>
+          </span>
+        }
+
+        @if (company.websiteLabel && company.websiteUrl) {
+          <a class="company-info__meta-link" [href]="company.websiteUrl">
+            <i-lucide class="company-info__meta-icon" name="globe" aria-hidden="true" />
+            <span>{{ company.websiteLabel }}</span>
+          </a>
+        }
+      </div>
+    }
+
+    @if (company.badges?.length) {
+      <div class="company-info__badges" aria-label="Company tags">
+        @for (badge of company.badges; track badge.label) {
+          <app-badge [variant]="badge.variant ?? 'outline'">{{ badge.label }}</app-badge>
+        }
+      </div>
+    }
+
+    @if (company.description) {
+      <p class="company-info__description">{{ company.description }}</p>
+    }
+  </div>
+</div>

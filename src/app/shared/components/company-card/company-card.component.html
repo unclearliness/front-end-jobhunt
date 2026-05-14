@@ -1,0 +1,31 @@
+<article class="company-card">
+  <div class="company-card__logo" aria-hidden="true">
+    @if (company.initials) {
+      <span class="company-card__logo-text">{{ company.initials }}</span>
+    } @else {
+      <i-lucide class="company-card__logo-icon" name="building-2" />
+    }
+  </div>
+
+  <h3 class="company-card__name">{{ company.name }}</h3>
+
+  <div class="company-card__location">
+    <i-lucide class="company-card__location-icon" name="map-pin" aria-hidden="true" />
+    <span>{{ company.location }}</span>
+  </div>
+
+  @if (company.industry) {
+    <p class="company-card__industry">{{ company.industry }}</p>
+  }
+
+  <p class="company-card__description">{{ company.description }}</p>
+
+  <p class="company-card__open-jobs">
+    <i-lucide class="company-card__open-jobs-icon" name="building-2" aria-hidden="true" />
+    <span>{{ company.openJobs }}</span>
+  </p>
+
+  <footer class="company-card__footer">
+    <app-button [fullWidth]="true" (buttonClick)="onViewCompany()">View Company</app-button>
+  </footer>
+</article>

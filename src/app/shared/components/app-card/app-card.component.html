@@ -1,0 +1,11 @@
+<section
+  class="app-card"
+  [attr.aria-labelledby]="cardTitle && titleId ? titleId : null"
+  [attr.aria-label]="!cardTitle && ariaLabel ? ariaLabel : null"
+>
+  @if (cardTitle) {
+    <h2 class="app-card__title" [id]="titleId || null">{{ cardTitle }}</h2>
+  }
+
+  <ng-content />
+</section>

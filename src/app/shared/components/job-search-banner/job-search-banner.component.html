@@ -1,0 +1,47 @@
+<section class="job-search-banner" aria-labelledby="job-search-title">
+  <div class="job-search-banner__container">
+    <h1 class="job-search-banner__title" id="job-search-title">{{ title }}</h1>
+
+    <form
+      class="job-search-form"
+      [class.job-search-form--single]="!showLocationField"
+      [attr.aria-label]="formAriaLabel"
+      (ngSubmit)="onSubmit()"
+    >
+      <label class="job-search-field job-search-field--keyword">
+        <span class="job-search-field__icon" aria-hidden="true">
+          <i-lucide name="search" />
+        </span>
+        <input
+          class="job-search-field__input"
+          type="text"
+          [attr.aria-label]="searchAriaLabel"
+          [placeholder]="searchPlaceholder"
+        />
+      </label>
+
+      @if (showLocationField) {
+        <label class="job-search-field job-search-field--location">
+          <span class="job-search-field__icon" aria-hidden="true">
+            <i-lucide name="map-pin" />
+          </span>
+          <input
+            class="job-search-field__input"
+            type="text"
+            aria-label="Location"
+            [placeholder]="locationPlaceholder"
+          />
+        </label>
+      }
+
+      <app-button
+        class="job-search-form__submit"
+        variant="primary"
+        type="submit"
+        [fullWidth]="true"
+      >
+        {{ submitLabel }}
+      </app-button>
+    </form>
+  </div>
+</section>

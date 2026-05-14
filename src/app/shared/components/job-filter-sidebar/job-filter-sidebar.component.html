@@ -1,0 +1,33 @@
+<aside class="job-filters" aria-labelledby="job-filters-title">
+  <header class="job-filters__header">
+    <i-lucide class="job-filters__icon" name="sliders-horizontal" aria-hidden="true" />
+    <h2 class="job-filters__title" id="job-filters-title">Filters</h2>
+  </header>
+
+  <div class="job-filters__groups">
+    @for (group of filterGroups; track group.title; let groupIndex = $index) {
+      <section class="job-filter-group" [attr.aria-labelledby]="'filter-group-' + groupIndex">
+        <h3 class="job-filter-group__title" [id]="'filter-group-' + groupIndex">
+          {{ group.title }}
+        </h3>
+
+        <div class="job-filter-group__options">
+          @for (option of group.options; track option.label) {
+            <label class="job-filter-option">
+              <input
+                class="job-filter-option__input"
+                type="checkbox"
+                [checked]="option.checked"
+              />
+              <span class="job-filter-option__label">{{ option.label }}</span>
+            </label>
+          }
+        </div>
+      </section>
+    }
+  </div>
+
+  <div class="job-filters__actions">
+    <app-button [fullWidth]="true" (buttonClick)="onResetFilters()">Reset Filters</app-button>
+  </div>
+</aside>
