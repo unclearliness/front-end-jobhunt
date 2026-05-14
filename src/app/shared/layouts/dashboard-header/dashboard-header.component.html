@@ -33,25 +33,25 @@
       <a class="dashboard-nav__link" href="#">Resources</a>
     </nav>
 
-<!--    <div class="dashboard-actions">-->
-<!--      @if (user(); as currentUser) {-->
-<!--        <div class="dashboard-user" aria-label="Signed in user">-->
-<!--          <span class="dashboard-user__avatar" aria-hidden="true">-->
-<!--            {{ currentUser.name.charAt(0) }}-->
-<!--          </span>-->
-<!--          <span class="dashboard-user__meta">-->
-<!--            <span class="dashboard-user__name">{{ currentUser.name }}</span>-->
-<!--            <span class="dashboard-user__role">{{ currentUser.role }}</span>-->
-<!--          </span>-->
-<!--        </div>-->
+    <div class="dashboard-actions">
+      @if (user(); as currentUser) {
+        <div class="dashboard-user" aria-label="Signed in user">
+          <span class="dashboard-user__avatar" aria-hidden="true">
+            {{ currentUser.name.charAt(0) }}
+          </span>
+          <span class="dashboard-user__meta">
+            <span class="dashboard-user__name">{{ currentUser.name }}</span>
+            <span class="dashboard-user__role">{{ currentUser.role }}</span>
+          </span>
+        </div>
 
-<!--        <button class="dashboard-actions__logout" type="button" (click)="onLogout()">-->
-<!--          Logout-->
-<!--        </button>-->
-<!--      } @else {-->
-<!--        <a class="dashboard-actions__login" routerLink="/login">Login</a>-->
-<!--        <a class="dashboard-actions__signup" routerLink="/register-job-seeker">Sign Up</a>-->
-<!--      }-->
-<!--    </div>-->
+        <button class="dashboard-actions__logout" type="button" (click)="onLogout()">
+          Logout
+        </button>
+      } @else {
+        <a class="dashboard-actions__login" routerLink="/login">Login</a>
+        <a class="dashboard-actions__signup" routerLink="/register-job-seeker">Sign Up</a>
+      }
+    </div>
   </div>
 </header>

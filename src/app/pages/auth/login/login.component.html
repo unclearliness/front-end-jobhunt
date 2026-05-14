@@ -41,6 +41,7 @@
           placeholder="Enter your username"
           autocomplete="username"
         />
+        <app-field-error [control]="loginForm.get('username')" fieldName="Username"></app-field-error>
       </div>
 
       <div class="form-field">
@@ -57,6 +58,7 @@
           placeholder="Enter your password"
           autocomplete="current-password"
         />
+        <app-field-error [control]="loginForm.get('password')" fieldName="Password"></app-field-error>
       </div>
 
       <button class="primary-button" type="submit">Sign In</button>

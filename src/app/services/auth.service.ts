@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, map } from 'rxjs';
 import { API_ENDPOINTS } from '../shared/constants/api-endpoints';
 
 export interface LoginRequest {
@@ -19,6 +19,16 @@ export interface LoginData {
   refreshToken: string;
 }
 
+export interface AccountResponse {
+  id: number;
+  name: string;
+  email: string;
+  role: {
+    id: number;
+    name: string;
+  };
+}
+
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
 
@@ -34,6 +44,24 @@ export class AuthService {
         this.setTokens(response);
       }),
     );
+  }
+
+  getAccount(): Observable<AccountResponse> {
+    const token = this.canUseStorage() ? window.localStorage.getItem(ACCESS_TOKEN_KEY) : null;
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get<{ data: AccountResponse }>(API_ENDPOINTS.auth.account, { headers }).pipe(
+      map((res) => res.data)
+    );
+  }
+
+  logout(): void {
+    if (this.canUseStorage()) {
+      window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+      window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+    }
   }
 
   private setTokens(response: LoginResponse): void {
