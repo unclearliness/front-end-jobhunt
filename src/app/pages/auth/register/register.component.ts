@@ -26,6 +26,7 @@ export class RegisterComponent {
     age: [18, [Validators.required, Validators.min(0)]],
     gender: ['MALE', Validators.required],
     address: ['', Validators.required],
+    isEmployer: [false],
   });
 
   onSubmit(): void {
@@ -34,9 +35,23 @@ export class RegisterComponent {
       return;
     }
 
-    this.authService.register(this.registerForm.getRawValue()).subscribe({
+    const formValue = this.registerForm.getRawValue();
+    const payload = {
+      name: formValue.name,
+      email: formValue.email,
+      password: formValue.password,
+      age: formValue.age,
+      gender: formValue.gender,
+      address: formValue.address,
+    };
+
+    const request$ = formValue.isEmployer 
+      ? this.authService.registerHr(payload) 
+      : this.authService.register(payload);
+
+    request$.subscribe({
       next: () => {
-        this.toastService.success('Đăng ký thành công!');
+        this.toastService.success(formValue.isEmployer ? 'Đăng ký Nhà tuyển dụng thành công!' : 'Đăng ký thành công!');
         void this.router.navigateByUrl('/login');
       },
       error: (error: HttpErrorResponse) => {

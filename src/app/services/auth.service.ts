@@ -59,8 +59,17 @@ export class AuthService {
     return this.http.post<any>(API_ENDPOINTS.auth.register, body);
   }
 
+  registerHr(body: RegisterRequest): Observable<any> {
+    return this.http.post<any>(API_ENDPOINTS.auth.registerHr, body);
+  }
+
   getAccount(): Observable<AccountResponse> {
-    return this.http.get<{ data: AccountResponse }>(API_ENDPOINTS.auth.account).pipe(
+    const token = this.canUseStorage() ? window.localStorage.getItem(ACCESS_TOKEN_KEY) : null;
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get<{ data: AccountResponse }>(API_ENDPOINTS.auth.account, { headers }).pipe(
       map((res) => res.data)
     );
   }

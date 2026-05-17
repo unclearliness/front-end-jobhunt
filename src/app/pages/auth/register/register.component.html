@@ -47,7 +47,6 @@
           placeholder="Nguyen Van A"
           autocomplete="name"
         />
-        <app-field-error [control]="registerForm.get('name')" fieldName="Name"></app-field-error>
       </div>
 
       <div class="form-field">
@@ -60,7 +59,6 @@
           placeholder="you@example.com"
           autocomplete="email"
         />
-        <app-field-error [control]="registerForm.get('email')" fieldName="Email"></app-field-error>
       </div>
 
       <div class="form-field">
@@ -73,7 +71,6 @@
           placeholder="Create a password"
           autocomplete="new-password"
         />
-        <app-field-error [control]="registerForm.get('password')" fieldName="Password"></app-field-error>
       </div>
 
       <div class="form-row">
@@ -87,7 +84,6 @@
             placeholder="18"
             min="0"
           />
-          <app-field-error [control]="registerForm.get('age')" fieldName="Age"></app-field-error>
         </div>
 
         <div class="form-field">
@@ -96,7 +92,6 @@
             <option value="MALE">Male</option>
             <option value="FEMALE">Female</option>
           </select>
-          <app-field-error [control]="registerForm.get('gender')" fieldName="Gender"></app-field-error>
         </div>
       </div>
 
@@ -110,7 +105,11 @@
           placeholder="Enter your address"
           autocomplete="street-address"
         />
-        <app-field-error [control]="registerForm.get('address')" fieldName="Address"></app-field-error>
+      </div>
+
+      <div class="form-field" style="flex-direction: row; align-items: center; gap: 8px;">
+        <input type="checkbox" id="isEmployer" formControlName="isEmployer" style="width: 16px; height: 16px; margin: 0;" />
+        <label for="isEmployer" style="font-size: 14px; font-weight: 500; cursor: pointer;">Đăng ký Nhà tuyển dụng</label>
       </div>
 
       <button class="primary-button" type="submit">Create Account</button>
@@ -129,10 +128,6 @@
       <p>
         Already have an account?
         <a class="text-link" routerLink="/login">Sign in</a>
-      </p>
-      <p>
-        Looking to hire?
-        <a class="text-link" routerLink="/register-employer">Register as Employer</a>
       </p>
     </footer>
   </section>

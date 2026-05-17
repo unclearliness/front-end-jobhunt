@@ -46,13 +46,7 @@ export const routes: Routes = [
         (component) => component.RegisterComponent,
       ),
   },
-  {
-    path: 'register-employer',
-    loadComponent: () =>
-      import('./pages/auth/employer-register/employer-register.component').then(
-        (component) => component.EmployerRegisterComponent,
-      ),
-  },
+
   {
     path: 'dashboard',
     loadComponent: () =>
