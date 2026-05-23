@@ -16,6 +16,7 @@ export interface CompanyCardData {
   readonly industry?: string;
   readonly description: string;
   readonly openJobs: string;
+  readonly logoUrl?: string;
 }
 
 @Component({

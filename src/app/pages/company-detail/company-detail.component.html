@@ -10,60 +10,67 @@
 
       <div class="company-detail__layout">
         <div class="company-detail__main">
-          <app-card>
-            <app-company-info
-              [company]="companyInfo"
-              headingLevel="h1"
-            />
-          </app-card>
+          @if (detailState().isLoading) {
+            <app-card ariaLabel="Loading company details">
+              <p class="company-detail__status">Loading company information...</p>
+            </app-card>
+          } @else if (detailState().errorMessage) {
+            <app-card ariaLabel="Company details error">
+              <p class="company-detail__status company-detail__status--error">
+                {{ detailState().errorMessage }}
+              </p>
+            </app-card>
+          } @else {
+            <app-card>
+              <app-company-info [company]="detailState().companyInfo" headingLevel="h1" />
+            </app-card>
 
-          <app-card cardTitle="About the Company" titleId="company-about-title">
-            <div class="company-sections">
-              @for (section of sections; track section.title; let sectionIndex = $index) {
-                <section
-                  class="company-section"
-                  [attr.aria-labelledby]="'company-section-' + sectionIndex"
-                >
-                  <h3 class="company-section__title" [id]="'company-section-' + sectionIndex">
-                    {{ section.title }}
-                  </h3>
+            <app-card cardTitle="About the Company" titleId="company-about-title">
+              <div class="company-sections">
+                @for (section of detailState().sections; track section.title; let sectionIndex = $index) {
+                  <section
+                    class="company-section"
+                    [attr.aria-labelledby]="'company-section-' + sectionIndex"
+                  >
+                    @if (section.content) {
+                      <p class="company-section__text">{{ section.content }}</p>
+                    }
 
-                  @if (section.content) {
-                    <p class="company-section__text">{{ section.content }}</p>
-                  }
-
-                  @if (section.items?.length) {
-                    <ul class="company-section__list">
-                      @for (item of section.items; track item) {
-                        <li>{{ item }}</li>
-                      }
-                    </ul>
-                  }
-                </section>
-              }
-            </div>
-          </app-card>
+                    @if (section.items?.length) {
+                      <ul class="company-section__list">
+                        @for (item of section.items; track item) {
+                          <li>{{ item }}</li>
+                        }
+                      </ul>
+                    }
+                  </section>
+                }
+              </div>
+            </app-card>
+          }
         </div>
 
         <aside class="company-detail__sidebar" aria-label="Company details and actions">
-          <app-quick-stats
-            title="Company Info"
-            titleId="company-info-title"
-            variant="summary"
-            [items]="companyInfoRows"
-          />
+          @if (!detailState().isLoading && !detailState().errorMessage) {
+            <app-quick-stats
+              title="Company Info"
+              titleId="company-info-title"
+              variant="summary"
+              [items]="detailState().companyInfoRows"
+            />
 
-          <app-quick-stats
-            title="Quick Stats"
-            titleId="company-quick-stats-title"
-            [items]="quickStats"
-          />
+            <app-quick-stats
+              title="Quick Stats"
+              titleId="company-quick-stats-title"
+              [items]="detailState().quickStats"
+            />
 
-          <app-card ariaLabel="Follow company">
-            <app-button variant="primary" [fullWidth]="true" (buttonClick)="onFollowCompany()">
-              Follow Company
-            </app-button>
-          </app-card>
+            <app-card ariaLabel="Follow company">
+              <app-button variant="primary" [fullWidth]="true" (buttonClick)="onFollowCompany()">
+                Follow Company
+              </app-button>
+            </app-card>
+          }
         </aside>
       </div>
     </div>

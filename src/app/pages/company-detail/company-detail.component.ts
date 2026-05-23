@@ -1,11 +1,14 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   ArrowLeft,
   LUCIDE_ICONS,
   LucideAngularModule,
   LucideIconProvider,
 } from 'lucide-angular';
+import { catchError, map, of, startWith, switchMap } from 'rxjs';
+import { CompanyApi, CompanyService } from '../../services/company.service';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import {
@@ -16,6 +19,7 @@ import {
   QuickStatItem,
   QuickStatsComponent,
 } from '../../shared/components/quick-stats/quick-stats.component';
+import { API_ENDPOINTS } from '../../shared/constants/api-endpoints';
 import { DashboardHeaderComponent } from '../../shared/layouts/dashboard-header/dashboard-header.component';
 
 interface CompanySection {
@@ -23,6 +27,27 @@ interface CompanySection {
   readonly content?: string;
   readonly items?: readonly string[];
 }
+
+interface CompanyDetailState {
+  readonly isLoading: boolean;
+  readonly errorMessage: string | null;
+  readonly companyInfo: CompanyInfoData;
+  readonly companyInfoRows: readonly QuickStatItem[];
+  readonly quickStats: readonly QuickStatItem[];
+  readonly sections: readonly CompanySection[];
+}
+
+const INITIAL_STATE: CompanyDetailState = {
+  isLoading: true,
+  errorMessage: null,
+  companyInfo: {
+    initials: '--',
+    name: 'Company',
+  },
+  companyInfoRows: [],
+  quickStats: [],
+  sections: [],
+};
 
 @Component({
   selector: 'app-company-detail',
@@ -47,59 +72,78 @@ interface CompanySection {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CompanyDetailComponent {
-  readonly companyInfo: CompanyInfoData = {
-    initials: 'TC',
-    name: 'TechCorp Inc.',
-    location: 'San Francisco, CA',
-    websiteLabel: 'techcorp.example.com',
-    websiteUrl: 'https://techcorp.example.com',
-    badges: [
-      { label: 'Technology', variant: 'default' },
-      { label: '500-1000 employees', variant: 'outline' },
-    ],
-  };
+  private readonly route = inject(ActivatedRoute);
+  private readonly companyService = inject(CompanyService);
 
-  readonly companyInfoRows: readonly QuickStatItem[] = [
-    { label: 'Industry', value: 'Technology' },
-    { label: 'Company Size', value: '500-1000 employees' },
-    { label: 'Founded', value: '2015' },
-    { label: 'Location', value: 'San Francisco, CA' },
-    { label: 'Open Jobs', value: '5 positions' },
-  ];
+  readonly detailState = toSignal(
+    this.route.paramMap.pipe(
+      map((params) => Number(params.get('id'))),
+      switchMap((id) => {
+        if (!Number.isInteger(id) || id <= 0) {
+          return of({
+            ...INITIAL_STATE,
+            isLoading: false,
+            errorMessage: 'Company ID is invalid.',
+          });
+        }
 
-  readonly quickStats: readonly QuickStatItem[] = [
-    { label: 'Team Size', value: '750+ employees', icon: 'users' },
-    { label: 'Open Positions', value: '5 jobs', icon: 'briefcase' },
-    { label: 'Founded', value: '2015', icon: 'calendar' },
-  ];
-
-  readonly sections: readonly CompanySection[] = [
-    {
-      title: 'Our Mission',
-      content:
-        'TechCorp is a leading technology company building innovative solutions for the future of work. We are passionate about creating products that empower teams to collaborate more effectively and achieve their goals.',
-    },
-    {
-      title: 'What We Do',
-      content:
-        'We develop cutting-edge software solutions for enterprise clients, focusing on productivity tools, collaboration platforms, and automation technologies. Our products are used by millions of users worldwide across various industries.',
-    },
-    {
-      title: 'Our Culture',
-      content:
-        'We believe in fostering a culture of innovation, collaboration, and continuous learning. Our team is composed of talented individuals from diverse backgrounds who share a passion for technology and making a positive impact.',
-    },
-    {
-      title: 'Benefits & Perks',
-      items: [
-        'Competitive salary and equity packages',
-        'Comprehensive health, dental, and vision insurance',
-        'Flexible work arrangements and remote options',
-        'Professional development budget ($5,000/year)',
-        'Generous PTO and parental leave',
-      ],
-    },
-  ];
+        return this.companyService.getById(id).pipe(
+          map((company) => this.createDetailState(company)),
+          catchError(() =>
+            of({
+              ...INITIAL_STATE,
+              isLoading: false,
+              errorMessage: 'Unable to load company details.',
+            }),
+          ),
+          startWith(INITIAL_STATE),
+        );
+      }),
+    ),
+    { initialValue: INITIAL_STATE },
+  );
 
   onFollowCompany(): void {}
+
+  private createDetailState(company: CompanyApi): CompanyDetailState {
+    return {
+      isLoading: false,
+      errorMessage: null,
+      companyInfo: {
+        initials: this.getInitials(company.name),
+        name: company.name,
+        logoUrl: company.logo ? `${API_ENDPOINTS.companies.logoBase}${company.logo}` : undefined,
+        location: company.address,
+        badges: [
+          { label: company.industry, variant: 'default' },
+          { label: `${company.companySize} employees`, variant: 'outline' },
+        ],
+      },
+      companyInfoRows: [
+        { label: 'Industry', value: company.industry },
+        { label: 'Company Size', value: `${company.companySize} employees` },
+        { label: 'Founded', value: String(company.founded) },
+        { label: 'Location', value: company.address },
+      ],
+      quickStats: [
+        { label: 'Team Size', value: `${company.companySize} employees`, icon: 'users' },
+        { label: 'Founded', value: String(company.founded), icon: 'calendar' },
+      ],
+      sections: [
+        {
+          title: 'About the Company',
+          content: company.description,
+        },
+      ],
+    };
+  }
+
+  private getInitials(name: string): string {
+    return name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '')
+      .join('');
+  }
 }

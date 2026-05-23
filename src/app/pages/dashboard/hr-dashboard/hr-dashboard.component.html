@@ -1,0 +1,356 @@
+<main class="hr-dashboard-page">
+  <app-dashboard-header />
+
+  <div class="hr-dashboard-layout">
+    <aside class="hr-dashboard-sidebar" aria-label="HR dashboard navigation">
+      <nav class="hr-dashboard-nav">
+        @for (item of dashboardNavigation; track item.id) {
+          <button
+            class="hr-dashboard-nav__button hr-dashboard-nav__button--{{ item.id }}"
+            [class.is-active]="isActive(item.id)"
+            [id]="item.buttonId"
+            type="button"
+            [attr.aria-controls]="item.frameId"
+            [attr.aria-current]="isActive(item.id) ? 'page' : null"
+            [attr.data-prototype-target]="item.frameId"
+            data-prototype-action="On Click -> Navigate To -> Slide In"
+            (click)="selectFrame(item.id)"
+          >
+            <i-lucide class="hr-dashboard-nav__icon" [name]="item.icon" aria-hidden="true" />
+            <span>{{ item.label }}</span>
+          </button>
+        }
+      </nav>
+    </aside>
+
+    <div class="hr-dashboard-content">
+      @switch (activeFrame()) {
+        @case ('overview') {
+          <section
+            class="dashboard-frame dashboard-frame--overview"
+            id="frame-hr-overview"
+            aria-labelledby="frame-hr-overview-title"
+          >
+            <header class="frame-header">
+              <h1 id="frame-hr-overview-title">Employer Dashboard</h1>
+              <p>Manage your job postings and candidates</p>
+            </header>
+
+            <div class="stats-grid">
+              @for (stat of overviewStats; track stat.label) {
+                <article class="stat-card">
+                  <div class="stat-card__header">
+                    <h2>{{ stat.label }}</h2>
+                    <i-lucide [name]="stat.icon" aria-hidden="true" />
+                  </div>
+                  <strong>{{ stat.value }}</strong>
+                  <span>{{ stat.helper }}</span>
+                </article>
+              }
+            </div>
+
+            <div class="overview-grid">
+              <app-card cardTitle="Quick Actions" titleId="hr-overview-actions-title">
+                <div class="quick-actions">
+                  <button
+                    class="quick-action"
+                    id="button-hr-quick-post-job"
+                    type="button"
+                    aria-controls="frame-hr-post-job"
+                    (click)="selectFrame('post-job')"
+                  >
+                    <span>
+                      <strong>Post New Job</strong>
+                      <small>Create a new job posting</small>
+                    </span>
+                    <i-lucide name="chevron-right" aria-hidden="true" />
+                  </button>
+
+                  <button
+                    class="quick-action"
+                    id="button-hr-quick-manage-jobs"
+                    type="button"
+                    aria-controls="frame-hr-my-jobs"
+                    (click)="selectFrame('my-jobs')"
+                  >
+                    <span>
+                      <strong>Manage Jobs</strong>
+                      <small>View and edit your job postings</small>
+                    </span>
+                    <i-lucide name="chevron-right" aria-hidden="true" />
+                  </button>
+
+                  <button
+                    class="quick-action"
+                    id="button-hr-quick-review-applicants"
+                    type="button"
+                    aria-controls="frame-hr-applicants"
+                    (click)="selectFrame('applicants')"
+                  >
+                    <span>
+                      <strong>Review Applicants</strong>
+                      <small>See who applied to your jobs</small>
+                    </span>
+                    <i-lucide name="chevron-right" aria-hidden="true" />
+                  </button>
+                </div>
+              </app-card>
+
+              <app-card cardTitle="Recent Applications" titleId="hr-overview-applications-title">
+                <div class="activity-list">
+                  @for (application of recentApplications; track application.name) {
+                    <article class="activity-item">
+                      <span>
+                        <strong>{{ application.name }}</strong>
+                        <small>{{ application.role }}</small>
+                      </span>
+                      <time>{{ application.time }}</time>
+                    </article>
+                  }
+                </div>
+              </app-card>
+            </div>
+          </section>
+        }
+
+        @case ('post-job') {
+          <section
+            class="dashboard-frame dashboard-frame--post-job"
+            id="frame-hr-post-job"
+            aria-labelledby="frame-hr-post-job-title"
+          >
+            <header class="frame-header frame-header--with-action">
+              <div>
+                <h1 id="frame-hr-post-job-title">Post Job</h1>
+                <p>Create a job posting that is clear, scannable, and ready for candidates</p>
+              </div>
+              <app-button variant="outline" size="compact">Save Draft</app-button>
+            </header>
+
+            <form class="job-form" aria-label="Create job posting">
+              <app-card cardTitle="Job Details" titleId="hr-job-details-title">
+                <div class="form-grid">
+                  <label class="field field--wide">
+                    <span>Job title</span>
+                    <input type="text" value="Senior Frontend Developer" />
+                  </label>
+                  <label class="field">
+                    <span>Employment type</span>
+                    <select>
+                      <option>Full-time</option>
+                      <option>Part-time</option>
+                      <option>Contract</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Workplace</span>
+                    <select>
+                      <option>Hybrid</option>
+                      <option>Remote</option>
+                      <option>On-site</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span>Location</span>
+                    <input type="text" value="San Francisco, CA" />
+                  </label>
+                  <label class="field">
+                    <span>Salary range</span>
+                    <input type="text" value="$120k - $160k" />
+                  </label>
+                  <label class="field field--wide">
+                    <span>Job description</span>
+                    <textarea rows="5">Build polished product experiences with Angular, TypeScript, and reusable UI patterns.</textarea>
+                  </label>
+                  <label class="field field--wide">
+                    <span>Requirements</span>
+                    <textarea rows="4">5+ years frontend experience, strong component architecture, accessibility mindset, and API collaboration.</textarea>
+                  </label>
+                </div>
+              </app-card>
+
+              <footer class="form-actions">
+                <app-button variant="outline" size="compact" type="button">Preview</app-button>
+                <app-button variant="primary" size="compact" type="submit">
+                  <i-lucide name="send" aria-hidden="true" />
+                  Publish Job
+                </app-button>
+              </footer>
+            </form>
+          </section>
+        }
+
+        @case ('my-jobs') {
+          <section
+            class="dashboard-frame dashboard-frame--my-jobs"
+            id="frame-hr-my-jobs"
+            aria-labelledby="frame-hr-my-jobs-title"
+          >
+            <header class="frame-header frame-header--with-action">
+              <div>
+                <h1 id="frame-hr-my-jobs-title">My Jobs</h1>
+                <p>Manage active, reviewing, and draft postings from one place</p>
+              </div>
+              <app-button variant="primary" size="compact" (buttonClick)="selectFrame('post-job')">
+                <i-lucide name="circle-plus" aria-hidden="true" />
+                New Job
+              </app-button>
+            </header>
+
+            <div class="frame-toolbar">
+              <label class="search-control">
+                <i-lucide name="search" aria-hidden="true" />
+                <input type="search" placeholder="Search job postings" aria-label="Search job postings" />
+              </label>
+              <select class="select-control" aria-label="Filter job postings">
+                <option>All Jobs</option>
+                <option>Active</option>
+                <option>Reviewing</option>
+                <option>Draft</option>
+              </select>
+            </div>
+
+            <div class="posting-list">
+              @for (job of jobPostings; track job.title) {
+                <article class="posting-row">
+                  <div class="posting-row__main">
+                    <h2>{{ job.title }}</h2>
+                    <p>{{ job.location }} · {{ job.type }} · Posted {{ job.posted }}</p>
+                  </div>
+                  <div class="posting-metrics">
+                    <span><i-lucide name="users" aria-hidden="true" />{{ job.applicants }} applicants</span>
+                    <span><i-lucide name="eye" aria-hidden="true" />{{ job.views }} views</span>
+                  </div>
+                  <span class="status-badge {{ job.statusClass }}">{{ job.status }}</span>
+                  <div class="row-actions">
+                    <button class="icon-button" type="button" aria-label="View job posting">
+                      <i-lucide name="eye" aria-hidden="true" />
+                    </button>
+                    <button class="icon-button" type="button" aria-label="Edit job posting">
+                      <i-lucide name="edit" aria-hidden="true" />
+                    </button>
+                  </div>
+                </article>
+              }
+            </div>
+          </section>
+        }
+
+        @case ('applicants') {
+          <section
+            class="dashboard-frame dashboard-frame--applicants"
+            id="frame-hr-applicants"
+            aria-labelledby="frame-hr-applicants-title"
+          >
+            <header class="frame-header">
+              <h1 id="frame-hr-applicants-title">Applicants</h1>
+              <p>Review candidates, track stage, and move the right people forward</p>
+            </header>
+
+            <div class="frame-toolbar">
+              <label class="search-control">
+                <i-lucide name="search" aria-hidden="true" />
+                <input type="search" placeholder="Search applicants" aria-label="Search applicants" />
+              </label>
+              <select class="select-control" aria-label="Filter applicants">
+                <option>All Stages</option>
+                <option>New</option>
+                <option>Under Review</option>
+                <option>Interview</option>
+              </select>
+            </div>
+
+            <div class="applicant-list">
+              @for (applicant of applicants; track applicant.name) {
+                <article class="applicant-row">
+                  <div class="avatar" aria-hidden="true">{{ applicant.name.slice(0, 1) }}</div>
+                  <div class="applicant-row__main">
+                    <h2>{{ applicant.name }}</h2>
+                    <p>{{ applicant.role }} · {{ applicant.location }}</p>
+                    <small>Applied {{ applicant.applied }}</small>
+                  </div>
+                  <span class="status-badge {{ applicant.stageClass }}">{{ applicant.stage }}</span>
+                  <strong class="score">{{ applicant.score }}</strong>
+                  <div class="row-actions">
+                    <button class="icon-button" type="button" aria-label="View applicant">
+                      <i-lucide name="eye" aria-hidden="true" />
+                    </button>
+                    <button class="icon-button" type="button" aria-label="Schedule applicant">
+                      <i-lucide name="calendar-check" aria-hidden="true" />
+                    </button>
+                  </div>
+                </article>
+              }
+            </div>
+          </section>
+        }
+
+        @case ('company-profile') {
+          <section
+            class="dashboard-frame dashboard-frame--company-profile"
+            id="frame-hr-company-profile"
+            aria-labelledby="frame-hr-company-profile-title"
+          >
+            <header class="frame-header frame-header--with-action">
+              <div>
+                <h1 id="frame-hr-company-profile-title">Company Profile</h1>
+                <p>Keep employer branding, contact details, and hiring information current</p>
+              </div>
+              <app-button variant="primary" size="compact">
+                <i-lucide name="edit" aria-hidden="true" />
+                Edit Profile
+              </app-button>
+            </header>
+
+            <div class="company-layout">
+              <app-card ariaLabel="Company profile summary">
+                <div class="company-summary">
+                  <div class="company-logo" aria-hidden="true">TC</div>
+                  <h2>TechCorp Inc.</h2>
+                  <p>Technology · 501-1,000 employees</p>
+                  <span class="status-badge status-badge--green">Verified Employer</span>
+                </div>
+              </app-card>
+
+              <app-card cardTitle="Company Details" titleId="hr-company-details-title">
+                <div class="detail-grid">
+                  @for (detail of companyDetails; track detail.label) {
+                    <div class="detail-item">
+                      <i-lucide [name]="detail.icon" aria-hidden="true" />
+                      <span>
+                        <small>{{ detail.label }}</small>
+                        <strong>{{ detail.value }}</strong>
+                      </span>
+                    </div>
+                  }
+                </div>
+              </app-card>
+
+              <app-card cardTitle="Hiring Benefits" titleId="hr-company-benefits-title">
+                <div class="benefit-list">
+                  @for (benefit of benefits; track benefit) {
+                    <span><i-lucide name="shield-check" aria-hidden="true" />{{ benefit }}</span>
+                  }
+                </div>
+              </app-card>
+
+              <app-card cardTitle="Company Assets" titleId="hr-company-assets-title">
+                <div class="asset-row">
+                  <i-lucide name="file-text" aria-hidden="true" />
+                  <span>
+                    <strong>Company overview.pdf</strong>
+                    <small>Updated May 12, 2026</small>
+                  </span>
+                  <app-button variant="outline" size="compact">
+                    <i-lucide name="upload" aria-hidden="true" />
+                    Replace
+                  </app-button>
+                </div>
+              </app-card>
+            </div>
+          </section>
+        }
+      }
+    </div>
+  </div>
+</main>

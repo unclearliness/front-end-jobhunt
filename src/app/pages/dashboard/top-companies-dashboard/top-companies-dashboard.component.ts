@@ -5,6 +5,10 @@ import {
   CompanyCardComponent,
   CompanyCardData,
 } from '../../../shared/components/company-card/company-card.component';
+import { CompanyService } from '../../../services/company.service';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
+import { API_ENDPOINTS } from '../../../shared/constants/api-endpoints';
 
 export type Company = CompanyCardData;
 
@@ -17,37 +21,25 @@ export type Company = CompanyCardData;
 })
 export class TopCompaniesDashboardComponent {
   private readonly router = inject(Router);
+  private readonly companyService = inject(CompanyService);
 
-  readonly companies: readonly Company[] = [
-    {
-      id: 1,
-      name: 'TechCorp Inc.',
-      location: 'San Francisco, CA',
-      description: 'Leading technology company building...',
-      openJobs: '12 open jobs',
-    },
-    {
-      id: 2,
-      name: 'Innovation Labs',
-      location: 'New York, NY',
-      description: 'Fast-growing startup revolutionizing the e-...',
-      openJobs: '8 open jobs',
-    },
-    {
-      id: 3,
-      name: 'DesignStudio',
-      location: 'Los Angeles, CA',
-      description: 'Creative agency specializing in digital experiences and...',
-      openJobs: '5 open jobs',
-    },
-    {
-      id: 4,
-      name: 'DataCorp',
-      location: 'Boston, MA',
-      description: 'Data analytics platform helping businesses make...',
-      openJobs: '15 open jobs',
-    },
-  ];
+  readonly companies = toSignal(
+    this.companyService.search(1, 4).pipe(
+      map((companies: any[]) =>
+        companies.map((company) => ({
+          id: company.id,
+          name: company.name,
+          location: company.address,
+          description: company.description,
+          logoUrl: company.logo
+            ? `${API_ENDPOINTS.companies.logoBase}${company.logo}`
+            : undefined,
+          openJobs: 'View jobs',
+        })),
+      ),
+    ),
+    { initialValue: [] },
+  );
 
   onViewAllCompanies(): void {
     void this.router.navigateByUrl('/companies');

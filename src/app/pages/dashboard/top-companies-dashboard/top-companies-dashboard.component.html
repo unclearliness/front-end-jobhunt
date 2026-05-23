@@ -10,7 +10,7 @@
     </header>
 
     <div class="company-grid">
-      @for (company of companies; track company.id) {
+      @for (company of companies(); track company.id) {
         <app-company-card [company]="company" (viewCompany)="onViewCompany($event)" />
       }
     </div>

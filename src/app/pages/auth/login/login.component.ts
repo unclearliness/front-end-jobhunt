@@ -32,11 +32,41 @@ export class LoginComponent {
 
     this.authService.login(this.loginForm.getRawValue()).subscribe({
       next: () => {
-        void this.router.navigateByUrl('/dashboard');
+        this.navigateAfterLogin();
       },
       error: (error: HttpErrorResponse) => {
         this.toastService.apiError(error);
       },
     });
+  }
+
+  private navigateAfterLogin(): void {
+    this.authService.getAccount().subscribe({
+      next: (account) => {
+        void this.router.navigateByUrl(this.getDashboardRoute(account.role.name));
+      },
+      error: () => {
+        void this.router.navigateByUrl('/dashboard');
+      },
+    });
+  }
+
+  private getDashboardRoute(roleName: string): string {
+    const normalizedRole = roleName.toLowerCase();
+
+    if (normalizedRole.includes('admin')) {
+      return '/admin-dashboard';
+    }
+
+    if (
+      normalizedRole.includes('hr') ||
+      normalizedRole.includes('employer') ||
+      normalizedRole.includes('company') ||
+      normalizedRole.includes('recruiter')
+    ) {
+      return '/hr-dashboard';
+    }
+
+    return '/dashboard';
   }
 }

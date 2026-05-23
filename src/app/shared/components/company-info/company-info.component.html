@@ -1,5 +1,11 @@
 <div class="company-info" [class.company-info--compact]="variant === 'compact'">
-  <div class="company-info__logo" aria-hidden="true">{{ company.initials }}</div>
+  <div class="company-info__logo" aria-hidden="true">
+    @if (company.logoUrl) {
+      <img class="company-info__logo-image" [src]="company.logoUrl" [alt]="company.name + ' logo'" />
+    } @else {
+      {{ company.initials }}
+    }
+  </div>
 
   <div class="company-info__body">
     @switch (headingLevel) {

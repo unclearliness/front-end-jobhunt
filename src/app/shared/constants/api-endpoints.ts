@@ -7,5 +7,19 @@ export const API_ENDPOINTS = {
     register: `${API_BASE_URL}/auth/register`,
     registerHr: `${API_BASE_URL}/auth/register/hr`,
   },
+  jobs: {
+    search: `${API_BASE_URL}/jobs`,
+    detail: (id: number | string) => `${API_BASE_URL}/jobs/${id}`,
+  },
+  companies: {
+    search: `${API_BASE_URL}/companies/search`,
+    detail: (id: number | string) => `${API_BASE_URL}/companies/${id}`,
+    logoBase: `${API_BASE_URL}/storage/company-logos/`,
+  },
+  files: {
+    upload: `${API_BASE_URL}/files`,
+  },
+  resumes: {
+    create: `${API_BASE_URL}/resumes`,
+  },
 } as const;
-

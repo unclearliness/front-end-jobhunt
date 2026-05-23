@@ -1,0 +1,70 @@
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: FieldErrorComponent is not used within the template of RegisterComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/auth/register/register.component.ts:11:45:
+[37m      11 │   imports: [ReactiveFormsModule, RouterLink, [32mFieldErrorComponent[37m],
+         ╵                                              [32m~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: FieldErrorComponent is not used within the template of RegisterComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/auth/register/register.component.ts:11:45:
+[37m      11 │   imports: [ReactiveFormsModule, RouterLink, [32mFieldErrorComponent[37m],
+         ╵                                              [32m~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: FieldErrorComponent is not used within the template of RegisterComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/auth/register/register.component.ts:11:45:
+[37m      11 │   imports: [ReactiveFormsModule, RouterLink, [32mFieldErrorComponent[37m],
+         ╵                                              [32m~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: FieldErrorComponent is not used within the template of RegisterComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/auth/register/register.component.ts:11:45:
+[37m      11 │   imports: [ReactiveFormsModule, RouterLink, [32mFieldErrorComponent[37m],
+         ╵                                              [32m~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: FieldErrorComponent is not used within the template of RegisterComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/auth/register/register.component.ts:11:45:
+[37m      11 │   imports: [ReactiveFormsModule, RouterLink, [32mFieldErrorComponent[37m],
+         ╵                                              [32m~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: FieldErrorComponent is not used within the template of RegisterComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/auth/register/register.component.ts:11:45:
+[37m      11 │   imports: [ReactiveFormsModule, RouterLink, [32mFieldErrorComponent[37m],
+         ╵                                              [32m~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: FieldErrorComponent is not used within the template of RegisterComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/auth/register/register.component.ts:11:45:
+[37m      11 │   imports: [ReactiveFormsModule, RouterLink, [32mFieldErrorComponent[37m],
+         ╵                                              [32m~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: FieldErrorComponent is not used within the template of RegisterComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/auth/register/register.component.ts:11:45:
+[37m      11 │   imports: [ReactiveFormsModule, RouterLink, [32mFieldErrorComponent[37m],
+         ╵                                              [32m~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: FieldErrorComponent is not used within the template of RegisterComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/auth/register/register.component.ts:11:45:
+[37m      11 │   imports: [ReactiveFormsModule, RouterLink, [32mFieldErrorComponent[37m],
+         ╵                                              [32m~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: FieldErrorComponent is not used within the template of RegisterComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/auth/register/register.component.ts:11:45:
+[37m      11 │   imports: [ReactiveFormsModule, RouterLink, [32mFieldErrorComponent[37m],
+         ╵                                              [32m~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

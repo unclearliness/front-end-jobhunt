@@ -24,20 +24,30 @@
 
 /* Logo Section */
 .company-card__logo {
-  width: 60px;
-  height: 60px;
+  width: 54px;
+  height: 54px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
   background: rgba(37, 99, 235, 0.1);
   border-radius: var(--radius-lg);
+  overflow: hidden;
   flex: 0 0 auto;
 }
 
+.company-card__logo-image {
+  width: auto;
+  height: auto;
+  max-width: 34px;
+  max-height: 34px;
+  display: block;
+  object-fit: contain;
+}
+
 .company-card__logo-icon {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   color: var(--primary);
 }
 
@@ -60,7 +70,7 @@
 /* Location */
 .company-card__location {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   margin-bottom: 24px;
   color: var(--muted-foreground);
@@ -72,6 +82,9 @@
 .company-card__location-icon {
   width: 16px;
   height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
   color: var(--muted-foreground);
 }

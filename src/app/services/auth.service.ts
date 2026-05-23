@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, tap, map } from 'rxjs';
 import { API_ENDPOINTS } from '../shared/constants/api-endpoints';
@@ -64,12 +64,7 @@ export class AuthService {
   }
 
   getAccount(): Observable<AccountResponse> {
-    const token = this.canUseStorage() ? window.localStorage.getItem(ACCESS_TOKEN_KEY) : null;
-    let headers = new HttpHeaders();
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
-    return this.http.get<{ data: AccountResponse }>(API_ENDPOINTS.auth.account, { headers }).pipe(
+    return this.http.get<{ data: AccountResponse }>(API_ENDPOINTS.auth.account).pipe(
       map((res) => res.data)
     );
   }

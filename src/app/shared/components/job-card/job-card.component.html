@@ -1,6 +1,17 @@
 <article class="job-card" [class.job-card--search]="appearance === 'search'">
   <header class="job-card__header">
-    <div class="job-card__logo" aria-hidden="true">{{ job.initials }}</div>
+    <div class="job-card__logo" aria-hidden="true">
+      @if (job.logoUrl && !logoLoadFailed) {
+        <img
+          class="job-card__logo-image"
+          [src]="job.logoUrl"
+          [alt]="job.company + ' logo'"
+          (error)="onLogoError()"
+        />
+      } @else {
+        {{ job.initials }}
+      }
+    </div>
 
     <div class="job-card__titles">
       <h3 class="job-card__title">{{ job.title }}</h3>
@@ -21,7 +32,7 @@
   <div class="job-card__body">
     <div class="job-card__detail">
       <i-lucide class="job-card__detail-icon" name="map-pin" aria-hidden="true" />
-      <span>{{ job.location }}</span>
+      {{ job.location }}
     </div>
 
     <div class="job-card__detail">
@@ -42,7 +53,7 @@
       <app-badge>{{ job.type }}</app-badge>
       <span class="job-card__time">
         <i-lucide class="job-card__time-icon" name="clock" aria-hidden="true" />
-        <span>{{ job.timePosted }}</span>
+        {{ job.timePosted }}
       </span>
     </div>
   } @else if (job.tags?.length) {

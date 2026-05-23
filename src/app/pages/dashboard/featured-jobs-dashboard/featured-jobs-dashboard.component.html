@@ -10,7 +10,7 @@
     </header>
 
     <div class="job-grid">
-      @for (job of jobs; track job.id) {
+      @for (job of jobs(); track job.id) {
         <app-job-card [job]="job" (viewDetails)="onViewDetails($event)" />
       }
     </div>

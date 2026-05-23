@@ -14,6 +14,7 @@ import { AppButtonComponent } from '../app-button/app-button.component';
 export interface JobCardData {
   readonly id: number;
   readonly initials: string;
+  readonly logoUrl?: string;
   readonly title: string;
   readonly company: string;
   readonly location: string;
@@ -41,12 +42,29 @@ type JobCardAppearance = 'featured' | 'search';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JobCardComponent {
-  @Input({ required: true }) job!: JobCardData;
+  private _job!: JobCardData;
+
+  @Input({ required: true })
+  set job(value: JobCardData) {
+    this._job = value;
+    this.logoLoadFailed = false;
+  }
+
+  get job(): JobCardData {
+    return this._job;
+  }
+
   @Input() appearance: JobCardAppearance = 'featured';
 
   @Output() viewDetails = new EventEmitter<JobCardData>();
 
+  logoLoadFailed = false;
+
   onViewDetails(): void {
     this.viewDetails.emit(this.job);
+  }
+
+  onLogoError(): void {
+    this.logoLoadFailed = true;
   }
 }

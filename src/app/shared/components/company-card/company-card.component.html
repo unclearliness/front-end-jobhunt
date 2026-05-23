@@ -1,9 +1,11 @@
 <article class="company-card">
-  <div class="company-card__logo" aria-hidden="true">
-    @if (company.initials) {
+  <div class="company-card__logo">
+    @if (company.logoUrl) {
+      <img class="company-card__logo-image" [src]="company.logoUrl" [alt]="company.name + ' logo'" />
+    } @else if (company.initials) {
       <span class="company-card__logo-text">{{ company.initials }}</span>
     } @else {
-      <i-lucide class="company-card__logo-icon" name="building-2" />
+      <i-lucide class="company-card__logo-icon" name="building-2" aria-hidden="true" />
     }
   </div>
 

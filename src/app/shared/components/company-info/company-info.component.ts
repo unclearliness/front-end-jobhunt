@@ -16,6 +16,7 @@ export interface CompanyInfoBadge {
 export interface CompanyInfoData {
   readonly initials: string;
   readonly name: string;
+  readonly logoUrl?: string;
   readonly location?: string;
   readonly websiteLabel?: string;
   readonly websiteUrl?: string;
