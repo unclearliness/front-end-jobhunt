@@ -33,6 +33,13 @@ import { AppButtonComponent } from '../../../shared/components/app-button/app-bu
 import { AppCardComponent } from '../../../shared/components/app-card/app-card.component';
 import { DashboardHeaderComponent } from '../../../shared/layouts/dashboard-header/dashboard-header.component';
 import { AuthService } from '../../../services/auth.service';
+import { JobService } from '../../../services/job.service';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map, switchMap } from 'rxjs';
+import { API_ENDPOINTS } from '../../../shared/constants/api-endpoints';
+import { UserService } from '../../../services/user.service';
+import { AppModalFormComponent, ModalFormField, ModalFormSubmitEvent } from '../../../shared/components/app-modal-form/app-modal-form.component';
+import { ToastService } from '../../../services/toast.service';
 
 type DashboardFrameId =
   | 'overview'
@@ -71,6 +78,33 @@ interface ApplicationItem {
   readonly statusClass: string;
   readonly nextStep: string;
 }
+interface JobApi {
+  id: number;
+  name: string;
+  location: string;
+  salary: number;
+  quantity: number;
+  level: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  active: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  createdBy?: string | null;
+  updatedBy?: string | null;
+  company: JobCompanyApi;
+  resumeStatus: string;
+}
+
+interface UserProfile {
+  id: number;
+  name: string;
+  email: string;
+  age: number;
+  gender: string;
+  address: string;
+}
 
 interface DashboardJob {
   readonly initials: string;
@@ -90,9 +124,19 @@ interface ProfileDetail {
   readonly icon: string;
 }
 
+interface JobCompanyApi {
+  id: number;
+  name: string;
+  description: string;
+  address: string;
+  logo: string | null;
+  industry: string;
+  companySize: number;
+  founded: number;
+}
 @Component({
   selector: 'app-user-dashboard',
-  imports: [DashboardHeaderComponent, LucideAngularModule, AppCardComponent, AppButtonComponent],
+  imports: [DashboardHeaderComponent, LucideAngularModule, AppCardComponent, AppButtonComponent, AppModalFormComponent],
   providers: [
     {
       provide: LUCIDE_ICONS,
@@ -136,6 +180,11 @@ export class UserDashboardComponent implements OnInit {
   readonly activeFrame = signal<DashboardFrameId>('overview');
   readonly userName = signal('John');
   readonly userInitial = computed(() => this.userName().charAt(0).toUpperCase() || 'J');
+  private readonly jobService = inject(JobService);
+  private readonly userService = inject(UserService);
+  private readonly toastService = inject(ToastService);
+
+  readonly isApplyModalOpen = signal(false);
 
   readonly dashboardNavigation: readonly DashboardNavItem[] = [
     {
@@ -185,45 +234,6 @@ export class UserDashboardComponent implements OnInit {
     { title: 'Applied to Senior Developer', company: 'TechCorp Inc.', time: '2 days ago' },
     { title: 'Interview scheduled', company: 'DesignHub', time: '3 days ago' },
     { title: 'Saved Backend Engineer', company: 'CloudSystems', time: '5 days ago' },
-  ];
-
-  readonly applications: readonly ApplicationItem[] = [
-    {
-      title: 'Senior Frontend Developer',
-      company: 'TechCorp Inc.',
-      location: 'San Francisco, CA',
-      appliedDate: 'May 14, 2026',
-      status: 'Under Review',
-      statusClass: 'status-badge--blue',
-      nextStep: 'Recruiter review',
-    },
-    {
-      title: 'Product Designer',
-      company: 'DesignHub',
-      location: 'Remote',
-      appliedDate: 'May 12, 2026',
-      status: 'Interview',
-      statusClass: 'status-badge--purple',
-      nextStep: 'Technical call',
-    },
-    {
-      title: 'Backend Engineer',
-      company: 'CloudSystems',
-      location: 'Austin, TX',
-      appliedDate: 'May 8, 2026',
-      status: 'Pending',
-      statusClass: 'status-badge--yellow',
-      nextStep: 'Awaiting response',
-    },
-    {
-      title: 'Data Analyst',
-      company: 'FinTech Solutions',
-      location: 'New York, NY',
-      appliedDate: 'May 1, 2026',
-      status: 'Rejected',
-      statusClass: 'status-badge--red',
-      nextStep: 'Closed',
-    },
   ];
 
   readonly savedJobs: readonly DashboardJob[] = [
@@ -302,18 +312,74 @@ export class UserDashboardComponent implements OnInit {
     { label: 'Preferred role', value: 'Senior Frontend Developer', icon: 'briefcase-business' },
   ];
 
+  readonly jobs = toSignal(
+    this.jobService.getApplicationsByResume().pipe(
+      map((responseList: any[]) =>
+        responseList
+          // Lọc theo thuộc tính active nằm bên trong đối tượng job
+          .filter((item) => item.job && item.job.active)
+          // Ánh xạ dữ liệu từ đối tượng job bên trong
+          .map((item) => ({
+            id: item.job.id,
+            logoUrl: item.job.company?.logo
+              ? `${API_ENDPOINTS.companies.logoBase}${item.job.company.logo}`
+              : undefined,
+            title: item.job.name,
+            company: item.job.company?.name || 'Unknown Company',
+            location: item.job.location,
+            timePosted: this.formatDeadline(item.job.endDate),
+            resumeStatus: item.resumeStatus,
+          })),
+      ),
+    ),
+  );
+
+  readonly userProfile = signal<UserProfile | null>(null);
+
+  readonly editProfileFields: readonly ModalFormField[] = [
+    { key: 'name', label: 'Họ và tên', type: 'text', required: true },
+    { key: 'email', label: 'Email', type: 'email', required: true },
+    { key: 'age', label: 'Tuổi', type: 'text', required: false },
+    { key: 'gender', label: 'Giới tính', type: 'text', required: false },
+    { key: 'address', label: 'Địa chỉ', type: 'text', required: false },
+  ];
+
+  readonly profileInitialValues = computed(() => {
+    const profile = this.userProfile();
+    if (!profile) return {};
+    return {
+      name: profile.name,
+      email: profile.email,
+      age: profile.age,
+      gender: profile.gender,
+      address: profile.address
+    };
+  });
+
+  readonly editProfileSubmitAction = (event: ModalFormSubmitEvent) => this.onEditProfileSubmit(event);
+
+
+
   ngOnInit(): void {
     if (typeof window === 'undefined' || !window.localStorage.getItem('accessToken')) {
       return;
     }
 
-    this.authService.getAccount().subscribe({
-      next: (account) => {
+    this.authService.getAccount().pipe(
+      switchMap((account) => {
         this.userName.set(account.name);
+        return this.userService.getUserProfile(account.id);
+      })
+    ).subscribe({
+      next: (profile) => {
+        this.userProfile.set(profile);
       },
-      error: () => {},
+      error: (err) => {
+        console.error('Lỗi khi tải thông tin tài khoản hoặc profile:', err);
+      },
     });
   }
+
 
   selectFrame(frame: DashboardFrameId): void {
     this.activeFrame.set(frame);
@@ -322,4 +388,58 @@ export class UserDashboardComponent implements OnInit {
   isActive(frame: DashboardFrameId): boolean {
     return this.activeFrame() === frame;
   }
+
+  private formatDeadline(deadline: string): string {
+    const parsedDate = new Date(deadline);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return 'Open now';
+    }
+
+    return `Apply by ${new Intl.DateTimeFormat('vi-VN').format(parsedDate)}`;
+  }
+
+
+  onApply(): void {
+    this.isApplyModalOpen.set(true);
+  }
+
+  onCloseModal(): void {
+    this.isApplyModalOpen.set(false);
+  }
+
+  onEditProfileSubmit(event: ModalFormSubmitEvent): void {
+    const currentProfile = this.userProfile();
+    if (!currentProfile) return;
+
+    // Chuẩn bị dữ liệu cập nhật
+    const updatedData: Partial<UserProfile> = {
+      id: this.userProfile()?.id,
+      name: event.values['name'] as string,
+      email: event.values['email'] as string,
+      age: Number(event.values['age']),
+      gender: event.values['gender'] as string,
+      address: event.values['address'] as string,
+    };
+
+    // Gọi API cập nhật
+    this.userService.updateUserProfile(updatedData).subscribe({
+      next: (updatedProfile) => {
+        // Cập nhật lại thông tin mới vào signal để giao diện tự render lại
+        this.userProfile.set(updatedProfile);
+        this.userName.set(updatedProfile.name);
+        // Đóng modal
+        this.isApplyModalOpen.set(false);
+        this.toastService.success('Profile updated successfully');
+      },
+      error: (err) => {
+        console.error('Lỗi khi cập nhật profile:', err);
+      }
+    });
+  }
+
+
+
+
+
+
 }

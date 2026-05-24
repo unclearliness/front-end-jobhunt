@@ -3,13 +3,13 @@ import {
   Component,
   EventEmitter,
   HostListener,
+  inject,
   Input,
   OnChanges,
   Output,
+  signal,
   SimpleChanges,
   WritableSignal,
-  inject,
-  signal,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -162,16 +162,8 @@ export class AppModalFormComponent implements OnChanges {
     }
 
     const payload: ModalFormSubmitEvent = { values, files, uploadedFiles };
-    console.log('app-modal-form emitting', payload);
     this.submitted.emit(payload);
-    if (this.submitAction) {
-      try {
-        this.submitAction(payload);
-      } catch (err) {
-        // swallow errors from parent-provided function to avoid breaking modal
-        console.error('submitAction threw', err);
-      }
-    }
+
   }
 
   onFileDragOver(event: DragEvent, fieldKey: string): void {

@@ -5,331 +5,325 @@
     <aside class="user-dashboard-sidebar" aria-label="User dashboard navigation">
       <nav class="user-dashboard-nav">
         @for (item of dashboardNavigation; track item.id) {
-          <button
-            class="user-dashboard-nav__button user-dashboard-nav__button--{{ item.id }}"
-            [class.is-active]="isActive(item.id)"
-            [id]="item.buttonId"
-            type="button"
-            [attr.aria-controls]="item.frameId"
-            [attr.aria-current]="isActive(item.id) ? 'page' : null"
-            [attr.data-prototype-target]="item.frameId"
-            data-prototype-action="On Click -> Navigate To -> Slide In"
-            (click)="selectFrame(item.id)"
-          >
-            <i-lucide class="user-dashboard-nav__icon" [name]="item.icon" aria-hidden="true" />
-            <span>{{ item.label }}</span>
-          </button>
+        <button class="user-dashboard-nav__button user-dashboard-nav__button--{{ item.id }}"
+          [class.is-active]="isActive(item.id)" [id]="item.buttonId" type="button" [attr.aria-controls]="item.frameId"
+          [attr.aria-current]="isActive(item.id) ? 'page' : null" [attr.data-prototype-target]="item.frameId"
+          data-prototype-action="On Click -> Navigate To -> Slide In" (click)="selectFrame(item.id)">
+          <i-lucide class="user-dashboard-nav__icon" [name]="item.icon" aria-hidden="true" />
+          <span>{{ item.label }}</span>
+        </button>
         }
       </nav>
     </aside>
 
     <div class="user-dashboard-content">
       @switch (activeFrame()) {
-        @case ('overview') {
-          <section
-            class="dashboard-frame dashboard-frame--overview"
-            id="frame-dashboard-overview"
-            aria-labelledby="frame-dashboard-overview-title"
-          >
-            <header class="frame-header">
-              <h1 id="frame-dashboard-overview-title">Welcome back, {{ userName() }}!</h1>
-              <p>Track your applications and manage your profile</p>
-            </header>
+      @case ('overview') {
+      <section class="dashboard-frame dashboard-frame--overview" id="frame-dashboard-overview"
+        aria-labelledby="frame-dashboard-overview-title">
+        <header class="frame-header">
+          <h1 id="frame-dashboard-overview-title">Welcome back, {{ userName() }}!</h1>
+          <p>Track your applications and manage your profile</p>
+        </header>
 
-            <div class="stats-grid">
-              @for (stat of overviewStats; track stat.label) {
-                <article class="stat-card">
-                  <div class="stat-card__header">
-                    <h2>{{ stat.label }}</h2>
-                    <i-lucide class="stat-card__icon" [name]="stat.icon" aria-hidden="true" />
-                  </div>
-                  <strong>{{ stat.value }}</strong>
-                  <span>{{ stat.helper }}</span>
-                </article>
+        <div class="stats-grid">
+          @for (stat of overviewStats; track stat.label) {
+          <article class="stat-card">
+            <div class="stat-card__header">
+              <h2>{{ stat.label }}</h2>
+              <i-lucide class="stat-card__icon" [name]="stat.icon" aria-hidden="true" />
+            </div>
+            <strong>{{ stat.value }}</strong>
+            <span>{{ stat.helper }}</span>
+          </article>
+          }
+        </div>
+
+        <div class="overview-grid">
+          <app-card cardTitle="Quick Actions" titleId="overview-actions-title">
+            <div class="quick-actions">
+              <button class="quick-action" id="button-quick-applied-jobs" type="button"
+                aria-controls="frame-dashboard-applied-jobs" (click)="selectFrame('applied-jobs')">
+                <span>
+                  <strong>View Applied Jobs</strong>
+                  <small>Track your application status</small>
+                </span>
+                <i-lucide name="chevron-right" aria-hidden="true" />
+              </button>
+              <button class="quick-action" id="button-quick-saved-jobs" type="button"
+                aria-controls="frame-dashboard-saved-jobs" (click)="selectFrame('saved-jobs')">
+                <span>
+                  <strong>Browse Saved Jobs</strong>
+                  <small>Review jobs you bookmarked</small>
+                </span>
+                <i-lucide name="chevron-right" aria-hidden="true" />
+              </button>
+              <button class="quick-action" id="button-quick-profile" type="button"
+                aria-controls="frame-dashboard-profile" (click)="selectFrame('profile')">
+                <span>
+                  <strong>Update Profile</strong>
+                  <small>Keep your information current</small>
+                </span>
+                <i-lucide name="chevron-right" aria-hidden="true" />
+              </button>
+            </div>
+          </app-card>
+
+          <app-card cardTitle="Recent Activity" titleId="overview-activity-title">
+            <div class="activity-list">
+              @for (activity of recentActivities; track activity.title) {
+              <article class="activity-item">
+                <span>
+                  <strong>{{ activity.title }}</strong>
+                  <small>{{ activity.company }}</small>
+                </span>
+                <time>{{ activity.time }}</time>
+              </article>
               }
             </div>
+          </app-card>
+        </div>
+      </section>
+      }
 
-            <div class="overview-grid">
-              <app-card cardTitle="Quick Actions" titleId="overview-actions-title">
-                <div class="quick-actions">
-                  <button
-                    class="quick-action"
-                    id="button-quick-applied-jobs"
-                    type="button"
-                    aria-controls="frame-dashboard-applied-jobs"
-                    (click)="selectFrame('applied-jobs')"
-                  >
-                    <span>
-                      <strong>View Applied Jobs</strong>
-                      <small>Track your application status</small>
-                    </span>
-                    <i-lucide name="chevron-right" aria-hidden="true" />
-                  </button>
-                  <button
-                    class="quick-action"
-                    id="button-quick-saved-jobs"
-                    type="button"
-                    aria-controls="frame-dashboard-saved-jobs"
-                    (click)="selectFrame('saved-jobs')"
-                  >
-                    <span>
-                      <strong>Browse Saved Jobs</strong>
-                      <small>Review jobs you bookmarked</small>
-                    </span>
-                    <i-lucide name="chevron-right" aria-hidden="true" />
-                  </button>
-                  <button
-                    class="quick-action"
-                    id="button-quick-profile"
-                    type="button"
-                    aria-controls="frame-dashboard-profile"
-                    (click)="selectFrame('profile')"
-                  >
-                    <span>
-                      <strong>Update Profile</strong>
-                      <small>Keep your information current</small>
-                    </span>
-                    <i-lucide name="chevron-right" aria-hidden="true" />
-                  </button>
-                </div>
-              </app-card>
+      @case ('applied-jobs') {
+      <section class="dashboard-frame dashboard-frame--applied-jobs" id="frame-dashboard-applied-jobs"
+        aria-labelledby="frame-dashboard-applied-jobs-title">
+        <header class="frame-header frame-header--with-action">
+          <div>
+            <h1 id="frame-dashboard-applied-jobs-title">Applied Jobs</h1>
+            <p>Monitor every application from submission to final decision</p>
+          </div>
+          <app-button variant="primary" size="compact">Find More Jobs</app-button>
+        </header>
 
-              <app-card cardTitle="Recent Activity" titleId="overview-activity-title">
-                <div class="activity-list">
-                  @for (activity of recentActivities; track activity.title) {
-                    <article class="activity-item">
-                      <span>
-                        <strong>{{ activity.title }}</strong>
-                        <small>{{ activity.company }}</small>
-                      </span>
-                      <time>{{ activity.time }}</time>
-                    </article>
-                  }
-                </div>
-              </app-card>
+        <div class="frame-toolbar">
+          <label class="search-control">
+            <i-lucide name="search" aria-hidden="true" />
+            <input type="search" placeholder="Search applied jobs" aria-label="Search applied jobs" />
+          </label>
+          <select class="select-control" aria-label="Filter applications">
+            <option>All Status</option>
+            <option>Under Review</option>
+            <option>Interview</option>
+            <option>Pending</option>
+          </select>
+        </div>
+
+        <div class="application-list">
+          @for (application of jobs(); track application.title) {
+          <article class="application-row">
+            <div class="company-mark" aria-hidden="true">
+              {{ application.company.slice(0, 2).toUpperCase() }}
             </div>
-          </section>
-        }
+            <div class="application-row__main">
+              <h2>{{ application.title }}</h2>
+              <p>{{ application.company }} · {{ application.location }}</p>
+              <small>Applied {{ application.timePosted }}</small>
+            </div>
+            <div class="application-row__meta">
+              <span class="status-badge status-badge--green">{{ application.resumeStatus}}</span>
+            </div>
+            <button class="icon-button" type="button" aria-label="View application">
+              <i-lucide name="eye" aria-hidden="true" />
+            </button>
+          </article>
+          }
+        </div>
+      </section>
+      }
 
-        @case ('applied-jobs') {
-          <section
-            class="dashboard-frame dashboard-frame--applied-jobs"
-            id="frame-dashboard-applied-jobs"
-            aria-labelledby="frame-dashboard-applied-jobs-title"
-          >
-            <header class="frame-header frame-header--with-action">
+      @case ('saved-jobs') {
+      <section class="dashboard-frame dashboard-frame--saved-jobs" id="frame-dashboard-saved-jobs"
+        aria-labelledby="frame-dashboard-saved-jobs-title">
+        <header class="frame-header frame-header--with-action">
+          <div>
+            <h1 id="frame-dashboard-saved-jobs-title">Saved Jobs</h1>
+            <p>Review bookmarked roles and apply when you are ready</p>
+          </div>
+          <app-button variant="outline" size="compact">Clear Filters</app-button>
+        </header>
+
+        <div class="job-card-grid">
+          @for (job of savedJobs; track job.title) {
+          <article class="dashboard-job-card">
+            <header class="dashboard-job-card__header">
+              <div class="company-mark" aria-hidden="true">{{ job.initials }}</div>
               <div>
-                <h1 id="frame-dashboard-applied-jobs-title">Applied Jobs</h1>
-                <p>Monitor every application from submission to final decision</p>
+                <h2>{{ job.title }}</h2>
+                <p>{{ job.company }}</p>
               </div>
-              <app-button variant="primary" size="compact">Find More Jobs</app-button>
+              <button class="icon-button" type="button" aria-label="Remove saved job">
+                <i-lucide name="trash-2" aria-hidden="true" />
+              </button>
             </header>
-
-            <div class="frame-toolbar">
-              <label class="search-control">
-                <i-lucide name="search" aria-hidden="true" />
-                <input type="search" placeholder="Search applied jobs" aria-label="Search applied jobs" />
-              </label>
-              <select class="select-control" aria-label="Filter applications">
-                <option>All Status</option>
-                <option>Under Review</option>
-                <option>Interview</option>
-                <option>Pending</option>
-              </select>
+            <div class="job-details">
+              <span><i-lucide name="map-pin" aria-hidden="true" />{{ job.location }}</span>
+              <span><i-lucide name="dollar-sign" aria-hidden="true" />{{ job.salary }}</span>
+              <span><i-lucide name="clock" aria-hidden="true" />{{ job.posted }}</span>
             </div>
-
-            <div class="application-list">
-              @for (application of applications; track application.title) {
-                <article class="application-row">
-                  <div class="company-mark" aria-hidden="true">
-                    {{ application.company.slice(0, 2).toUpperCase() }}
-                  </div>
-                  <div class="application-row__main">
-                    <h2>{{ application.title }}</h2>
-                    <p>{{ application.company }} · {{ application.location }}</p>
-                    <small>Applied {{ application.appliedDate }}</small>
-                  </div>
-                  <div class="application-row__meta">
-                    <span class="status-badge {{ application.statusClass }}">{{ application.status }}</span>
-                    <span>{{ application.nextStep }}</span>
-                  </div>
-                  <button class="icon-button" type="button" aria-label="View application">
-                    <i-lucide name="eye" aria-hidden="true" />
-                  </button>
-                </article>
+            <div class="tag-list">
+              <span>{{ job.type }}</span>
+              @for (tag of job.tags; track tag) {
+              <span>{{ tag }}</span>
               }
             </div>
-          </section>
-        }
+            <footer class="card-actions">
+              <app-button variant="primary" size="compact" [fullWidth]="true">Apply Now</app-button>
+            </footer>
+          </article>
+          }
+        </div>
+      </section>
+      }
 
-        @case ('saved-jobs') {
-          <section
-            class="dashboard-frame dashboard-frame--saved-jobs"
-            id="frame-dashboard-saved-jobs"
-            aria-labelledby="frame-dashboard-saved-jobs-title"
-          >
-            <header class="frame-header frame-header--with-action">
-              <div>
-                <h1 id="frame-dashboard-saved-jobs-title">Saved Jobs</h1>
-                <p>Review bookmarked roles and apply when you are ready</p>
+      @case ('recommendations') {
+      <section class="dashboard-frame dashboard-frame--recommendations" id="frame-dashboard-recommendations"
+        aria-labelledby="frame-dashboard-recommendations-title">
+        <header class="frame-header">
+          <h1 id="frame-dashboard-recommendations-title">Recommendations</h1>
+          <p>Personalized roles based on your profile, skills, and saved jobs</p>
+        </header>
+
+        <div class="recommendation-layout">
+          <div class="recommendation-list">
+            @for (job of recommendations; track job.title) {
+            <article class="recommendation-card">
+              <div class="recommendation-card__score">
+                <i-lucide name="star" aria-hidden="true" />
+                <span>{{ job.match }}</span>
               </div>
-              <app-button variant="outline" size="compact">Clear Filters</app-button>
-            </header>
-
-            <div class="job-card-grid">
-              @for (job of savedJobs; track job.title) {
-                <article class="dashboard-job-card">
-                  <header class="dashboard-job-card__header">
-                    <div class="company-mark" aria-hidden="true">{{ job.initials }}</div>
-                    <div>
-                      <h2>{{ job.title }}</h2>
-                      <p>{{ job.company }}</p>
-                    </div>
-                    <button class="icon-button" type="button" aria-label="Remove saved job">
-                      <i-lucide name="trash-2" aria-hidden="true" />
-                    </button>
-                  </header>
-                  <div class="job-details">
-                    <span><i-lucide name="map-pin" aria-hidden="true" />{{ job.location }}</span>
-                    <span><i-lucide name="dollar-sign" aria-hidden="true" />{{ job.salary }}</span>
-                    <span><i-lucide name="clock" aria-hidden="true" />{{ job.posted }}</span>
-                  </div>
-                  <div class="tag-list">
-                    <span>{{ job.type }}</span>
-                    @for (tag of job.tags; track tag) {
-                      <span>{{ tag }}</span>
-                    }
-                  </div>
-                  <footer class="card-actions">
-                    <app-button variant="primary" size="compact" [fullWidth]="true">Apply Now</app-button>
-                  </footer>
-                </article>
-              }
-            </div>
-          </section>
-        }
-
-        @case ('recommendations') {
-          <section
-            class="dashboard-frame dashboard-frame--recommendations"
-            id="frame-dashboard-recommendations"
-            aria-labelledby="frame-dashboard-recommendations-title"
-          >
-            <header class="frame-header">
-              <h1 id="frame-dashboard-recommendations-title">Recommendations</h1>
-              <p>Personalized roles based on your profile, skills, and saved jobs</p>
-            </header>
-
-            <div class="recommendation-layout">
-              <div class="recommendation-list">
-                @for (job of recommendations; track job.title) {
-                  <article class="recommendation-card">
-                    <div class="recommendation-card__score">
-                      <i-lucide name="star" aria-hidden="true" />
-                      <span>{{ job.match }}</span>
-                    </div>
-                    <header class="dashboard-job-card__header">
-                      <div class="company-mark" aria-hidden="true">{{ job.initials }}</div>
-                      <div>
-                        <h2>{{ job.title }}</h2>
-                        <p>{{ job.company }}</p>
-                      </div>
-                    </header>
-                    <div class="job-details">
-                      <span><i-lucide name="map-pin" aria-hidden="true" />{{ job.location }}</span>
-                      <span><i-lucide name="dollar-sign" aria-hidden="true" />{{ job.salary }}</span>
-                    </div>
-                    <div class="tag-list">
-                      @for (tag of job.tags; track tag) {
-                        <span>{{ tag }}</span>
-                      }
-                    </div>
-                    <footer class="card-actions card-actions--split">
-                      <app-button variant="outline" size="compact">Save</app-button>
-                      <app-button variant="primary" size="compact">Apply</app-button>
-                    </footer>
-                  </article>
+              <header class="dashboard-job-card__header">
+                <div class="company-mark" aria-hidden="true">{{ job.initials }}</div>
+                <div>
+                  <h2>{{ job.title }}</h2>
+                  <p>{{ job.company }}</p>
+                </div>
+              </header>
+              <div class="job-details">
+                <span><i-lucide name="map-pin" aria-hidden="true" />{{ job.location }}</span>
+                <span><i-lucide name="dollar-sign" aria-hidden="true" />{{ job.salary }}</span>
+              </div>
+              <div class="tag-list">
+                @for (tag of job.tags; track tag) {
+                <span>{{ tag }}</span>
                 }
               </div>
+              <footer class="card-actions card-actions--split">
+                <app-button variant="outline" size="compact">Save</app-button>
+                <app-button variant="primary" size="compact">Apply</app-button>
+              </footer>
+            </article>
+            }
+          </div>
 
-              <app-card cardTitle="Recommendation Settings" titleId="recommendation-settings-title">
-                <div class="settings-list">
-                  <label>
-                    <span>Remote jobs</span>
-                    <input type="checkbox" checked />
-                  </label>
-                  <label>
-                    <span>Senior roles</span>
-                    <input type="checkbox" checked />
-                  </label>
-                  <label>
-                    <span>Salary above $120k</span>
-                    <input type="checkbox" checked />
-                  </label>
-                </div>
-              </app-card>
+          <app-card cardTitle="Recommendation Settings" titleId="recommendation-settings-title">
+            <div class="settings-list">
+              <label>
+                <span>Remote jobs</span>
+                <input type="checkbox" checked />
+              </label>
+              <label>
+                <span>Senior roles</span>
+                <input type="checkbox" checked />
+              </label>
+              <label>
+                <span>Salary above $120k</span>
+                <input type="checkbox" checked />
+              </label>
             </div>
-          </section>
-        }
+          </app-card>
+        </div>
+      </section>
+      }
 
-        @case ('profile') {
-          <section
-            class="dashboard-frame dashboard-frame--profile"
-            id="frame-dashboard-profile"
-            aria-labelledby="frame-dashboard-profile-title"
-          >
-            <header class="frame-header frame-header--with-action">
-              <div>
-                <h1 id="frame-dashboard-profile-title">Profile</h1>
-                <p>Keep your candidate information accurate for better matches</p>
+      @case ('profile') {
+      <section class="dashboard-frame dashboard-frame--profile" id="frame-dashboard-profile"
+        aria-labelledby="frame-dashboard-profile-title">
+        <header class="frame-header frame-header--with-action">
+          <div>
+            <h1 id="frame-dashboard-profile-title">Profile</h1>
+            <p>Keep your candidate information accurate for better matches</p>
+          </div>
+          <app-button variant="primary" size="compact" (buttonClick)="onApply()">
+            <i-lucide name="edit" aria-hidden="true" />
+            Edit Profile
+          </app-button>
+        </header>
+
+        <div class="profile-layout">
+          <app-card ariaLabel="Candidate profile summary">
+            <div class="profile-summary">
+              <div class="profile-avatar" aria-hidden="true">{{ userInitial() }}</div>
+              <h2>{{ userProfile()?.name}}</h2>
+            </div>
+          </app-card>
+
+          <app-card cardTitle="Contact & Preferences" titleId="profile-details-title">
+            @if (userProfile(); as profile) {
+            <div class="profile-detail-grid">
+              <!-- Email -->
+              <div class="profile-detail">
+                <i-lucide name="mail" aria-hidden="true" />
+                <span>
+                  <small>Email</small>
+                  <strong>{{ profile.email }}</strong>
+                </span>
               </div>
-              <app-button variant="primary" size="compact">
-                <i-lucide name="edit" aria-hidden="true" />
-                Edit Profile
-              </app-button>
-            </header>
 
-            <div class="profile-layout">
-              <app-card ariaLabel="Candidate profile summary">
-                <div class="profile-summary">
-                  <div class="profile-avatar" aria-hidden="true">{{ userInitial() }}</div>
-                  <h2>{{ userName() }}</h2>
-                  <p>Senior Frontend Developer</p>
-                  <span class="status-badge status-badge--green">Profile 86% Complete</span>
-                </div>
-              </app-card>
+              <!-- Name -->
+              <div class="profile-detail">
+                <i-lucide name="user" aria-hidden="true" />
+                <span>
+                  <small>Họ và tên</small>
+                  <strong>{{ profile.name }}</strong>
+                </span>
+              </div>
 
-              <app-card cardTitle="Contact & Preferences" titleId="profile-details-title">
-                <div class="profile-detail-grid">
-                  @for (detail of profileDetails; track detail.label) {
-                    <div class="profile-detail">
-                      <i-lucide [name]="detail.icon" aria-hidden="true" />
-                      <span>
-                        <small>{{ detail.label }}</small>
-                        <strong>{{ detail.value }}</strong>
-                      </span>
-                    </div>
-                  }
-                </div>
-              </app-card>
+              <!-- Age -->
+              <div class="profile-detail">
+                <i-lucide name="calendar-check" aria-hidden="true" />
+                <span>
+                  <small>Tuổi</small>
+                  <strong>{{ profile.age || 'Chưa cập nhật' }}</strong>
+                </span>
+              </div>
 
-              <app-card cardTitle="Resume" titleId="profile-resume-title">
-                <div class="resume-card">
-                  <i-lucide name="file-text" aria-hidden="true" />
-                  <span>
-                    <strong>John_Doe_Resume_2026.pdf</strong>
-                    <small>Updated May 10, 2026</small>
-                  </span>
-                  <app-button variant="outline" size="compact">
-                    <i-lucide name="upload" aria-hidden="true" />
-                    Replace
-                  </app-button>
-                </div>
-              </app-card>
+              <!-- Gender -->
+              <div class="profile-detail">
+                <i-lucide name="user" aria-hidden="true" />
+                <span>
+                  <small>Giới tính</small>
+                  <strong>{{ profile.gender || 'Chưa cập nhật' }}</strong>
+                </span>
+              </div>
+
+              <!-- Address -->
+              <div class="profile-detail">
+                <i-lucide name="map-pin" aria-hidden="true" />
+                <span>
+                  <small>Địa chỉ</small>
+                  <strong>{{ profile.address || 'Chưa cập nhật' }}</strong>
+                </span>
+              </div>
             </div>
-          </section>
-        }
+            } @else {
+            <div class="profile-loading" style="padding: 1rem; text-align: center;">
+              <span>Đang tải thông tin cá nhân...</span>
+            </div>
+            }
+          </app-card>
+
+
+
+        </div>
+      </section>
+      }
       }
     </div>
   </div>
 </main>
+<app-modal-form [open]="isApplyModalOpen()" title="Chỉnh sửa thông tin cá nhân" subtitle="Cập nhật thông tin của bạn"
+  submitLabel="Lưu thay đổi" cancelLabel="Hủy" [fields]="editProfileFields" [initialValues]="profileInitialValues()"
+  (closed)="onCloseModal()" (submitted)="onEditProfileSubmit($event)">
+</app-modal-form>

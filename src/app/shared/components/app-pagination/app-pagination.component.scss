@@ -1,0 +1,111 @@
+:host {
+  display: block;
+}
+
+.app-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 0;
+  user-select: none;
+}
+
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  min-width: 40px;
+  padding: 0 16px;
+  border-radius: var(--radius-lg, 10px);
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.1));
+  background-color: var(--card, #ffffff);
+  color: var(--foreground, oklch(0.145 0 0));
+  font-size: 14px;
+  font-weight: var(--font-weight-medium, 500);
+  cursor: pointer;
+  transition: all 200ms ease;
+  outline: none;
+
+  &:hover:not(:disabled) {
+    border-color: var(--primary, #2563eb);
+    color: var(--primary, #2563eb);
+    background-color: var(--accent, #e9ebef);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    border-color: var(--primary, #2563eb);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--muted, #ececf0);
+    border-color: var(--border, rgba(0, 0, 0, 0.1));
+    color: var(--muted-foreground, #717182);
+  }
+
+  &--page {
+    padding: 0;
+    width: 40px;
+  }
+
+  &--active {
+    background-color: var(--primary, #2563eb);
+    border-color: var(--primary, #2563eb);
+    color: var(--primary-foreground, #ffffff);
+
+    &:hover:not(:disabled) {
+      background-color: var(--primary, #2563eb);
+      color: var(--primary-foreground, #ffffff);
+    }
+  }
+
+  &--prev,
+  &--next {
+    gap: 8px;
+
+    .pagination-btn__icon {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+.pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--muted-foreground, #717182);
+  font-size: 14px;
+}
+
+/* Responsive styles */
+@media (max-width: 640px) {
+  .app-pagination {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .pagination-btn {
+    &--prev,
+    &--next {
+      padding: 0;
+      width: 40px;
+
+      span {
+        display: none; /* Hide text on mobile devices, keep only icon */
+      }
+    }
+  }
+}

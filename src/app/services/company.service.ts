@@ -28,6 +28,16 @@ export class CompanyService {
       .pipe(map((res) => res.data.result));
   }
 
+  searchPaginated(page = 1, size = 4, filter?: string): Observable<any> {
+    const params: any = { page, size };
+    if (filter) {
+      params.filter = filter;
+    }
+    return this.http.get<any>(API_ENDPOINTS.companies.search, {
+      params,
+    });
+  }
+
   getById(id: number): Observable<CompanyApi> {
     return this.http
       .get<{ data: CompanyApi }>(API_ENDPOINTS.companies.detail(id))

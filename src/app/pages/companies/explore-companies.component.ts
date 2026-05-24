@@ -1,5 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import { map, switchMap, tap } from 'rxjs';
+import { CompanyService } from '../../services/company.service';
 import {
   CompanyCardComponent,
   CompanyCardData,
@@ -9,7 +12,9 @@ import {
   JobFilterSidebarComponent,
 } from '../../shared/components/job-filter-sidebar/job-filter-sidebar.component';
 import { JobSearchBannerComponent } from '../../shared/components/job-search-banner/job-search-banner.component';
+import { API_ENDPOINTS } from '../../shared/constants/api-endpoints';
 import { DashboardHeaderComponent } from '../../shared/layouts/dashboard-header/dashboard-header.component';
+import { AppPaginationComponent } from '../../shared/components/app-pagination/app-pagination.component';
 
 export type ExploreCompany = CompanyCardData;
 
@@ -20,6 +25,7 @@ export type ExploreCompany = CompanyCardData;
     DashboardHeaderComponent,
     JobFilterSidebarComponent,
     JobSearchBannerComponent,
+    AppPaginationComponent,
   ],
   templateUrl: './explore-companies.component.html',
   styleUrl: './explore-companies.component.scss',
@@ -27,100 +33,77 @@ export type ExploreCompany = CompanyCardData;
 })
 export class ExploreCompaniesComponent {
   private readonly router = inject(Router);
+  private readonly companyService = inject(CompanyService);
 
-  readonly companies: readonly ExploreCompany[] = [
-    {
-      id: 1,
-      initials: 'TC',
-      name: 'TechCorp Inc.',
-      location: 'San Francisco, CA',
-      industry: 'Technology',
-      description: 'Leading technology company building innovative solutions for the future of work.',
-      openJobs: '12 open positions',
-    },
-    {
-      id: 2,
-      initials: 'IL',
-      name: 'Innovation Labs',
-      location: 'New York, NY',
-      industry: 'E-commerce',
-      description: 'Fast-growing startup revolutionizing the e-commerce industry.',
-      openJobs: '8 open positions',
-    },
-    {
-      id: 3,
-      initials: 'DS',
-      name: 'DesignStudio',
-      location: 'Los Angeles, CA',
-      industry: 'Design',
-      description: 'Creative agency specializing in digital experiences and brand design.',
-      openJobs: '5 open positions',
-    },
-    {
-      id: 4,
-      initials: 'DC',
-      name: 'DataCorp',
-      location: 'Boston, MA',
-      industry: 'Technology',
-      description: 'Data analytics platform helping businesses make better decisions.',
-      openJobs: '15 open positions',
-    },
-    {
-      id: 5,
-      initials: 'CS',
-      name: 'CloudSystems',
-      location: 'Seattle, WA',
-      industry: 'Technology',
-      description: 'Cloud infrastructure company powering secure enterprise applications.',
-      openJobs: '10 open positions',
-    },
-    {
-      id: 6,
-      initials: 'FS',
-      name: 'FinTech Solutions',
-      location: 'New York, NY',
-      industry: 'Finance',
-      description: 'Financial technology company building modern payment and banking tools.',
-      openJobs: '7 open positions',
-    },
-    {
-      id: 7,
-      initials: 'HC',
-      name: 'HealthCare Plus',
-      location: 'Boston, MA',
-      industry: 'Healthcare',
-      description: 'Healthcare platform improving patient access and provider operations.',
-      openJobs: '6 open positions',
-    },
-    {
-      id: 8,
-      initials: 'EU',
-      name: 'EduLearn',
-      location: 'Seattle, WA',
-      industry: 'Education',
-      description: 'Education company creating digital learning experiences for students.',
-      openJobs: '4 open positions',
-    },
-  ];
+  readonly currentPage = signal(1);
+  readonly pageSize = signal(9); // 9 matches the 3-column layout nicely
+  readonly totalPages = signal(1);
+  readonly totalItems = signal(0);
+  readonly searchQuery = signal<string>('');
+
+  private readonly searchParams$ = toObservable(
+    computed(() => {
+      const query = this.searchQuery();
+      // Định dạng filter: name ~ 'query'
+      const filter = query ? `name ~ '${query}'` : undefined;
+      return {
+        page: this.currentPage(),
+        size: this.pageSize(),
+        filter
+      };
+    })
+  );
+
+  private readonly searchResponse = toSignal(
+    this.searchParams$.pipe(
+      switchMap(({ page, size, filter }) =>
+        this.companyService.searchPaginated(page, size, filter).pipe(
+          tap((response: any) => {
+            const meta = response?.data?.meta;
+            if (meta) {
+              this.totalPages.set(meta.pages || 1);
+              this.totalItems.set(meta.total || 0);
+            }
+          })
+        )
+      )
+    ),
+    { initialValue: null }
+  );
+
+  readonly companies = computed(() => {
+    const response = this.searchResponse();
+    const list = response?.data?.result || [];
+    return list.map((company: any) => ({
+      id: company.id,
+      name: company.name,
+      location: company.address,
+      description: company.description,
+      logoUrl: company.logo
+        ? `${API_ENDPOINTS.companies.logoBase}${company.logo}`
+        : undefined,
+      openJobs: 'View jobs',
+    })) as ExploreCompany[];
+  });
 
   readonly filterGroups: readonly FilterGroup[] = [
     {
       title: 'Location',
       options: [
-        { label: 'San Francisco, CA', checked: true },
-        { label: 'New York, NY', checked: false },
-        { label: 'Boston, MA', checked: false },
-        { label: 'Seattle, WA', checked: false },
+        { label: 'Ha Noi', checked: true },
+        { label: 'Ho Chi Minh City', checked: false },
+        { label: 'Da Nang', checked: false },
+        { label: 'Binh Duong', checked: false },
       ],
     },
     {
       title: 'Industry',
       options: [
-        { label: 'Technology', checked: true },
-        { label: 'Finance', checked: false },
-        { label: 'Healthcare', checked: false },
-        { label: 'Education', checked: false },
-        { label: 'E-commerce', checked: false },
+        { label: 'Software Development', checked: true },
+        { label: 'Cloud Infrastructure', checked: false },
+        { label: 'Fintech', checked: false },
+        { label: 'HealthTech', checked: false },
+        { label: 'Logistics Technology', checked: false },
       ],
     },
     {
@@ -133,9 +116,18 @@ export class ExploreCompaniesComponent {
     },
   ];
 
-  onSearchSubmitted(): void {}
+  onSearchSubmitted(keyword: string): void {
+    this.searchQuery.set(keyword);
+    this.currentPage.set(1);
+  }
 
-  onFiltersReset(): void {}
+  onFiltersReset(): void {
+    this.currentPage.set(1);
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage.set(page);
+  }
 
   onViewCompany(company: ExploreCompany): void {
     void this.router.navigate(['/companies', company.id]);

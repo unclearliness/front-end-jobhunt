@@ -149,7 +149,6 @@ export class JobDetailComponent {
     },
   ];
 
-  readonly applySubmitAction = (event: ModalFormSubmitEvent) => this.onApplyModalSubmit(event);
 
   readonly detailState = toSignal(
     this.route.paramMap.pipe(
@@ -183,9 +182,9 @@ export class JobDetailComponent {
     this.isApplyModalOpen.set(true);
   }
 
-  onSave(): void {}
+  onSave(): void { }
 
-  onShare(): void {}
+  onShare(): void { }
 
   onApplyModalClose(): void {
     this.isApplyModalOpen.set(false);

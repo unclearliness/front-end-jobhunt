@@ -31,6 +31,7 @@ export interface JobApi {
   updatedBy?: string | null;
   company: JobCompanyApi;
   skill: unknown[];
+  resumeStatus: string;
 }
 
 @Injectable({
@@ -50,6 +51,11 @@ export class JobService {
   getById(id: number): Observable<JobApi> {
     return this.http.get<any>(API_ENDPOINTS.jobs.detail(id)).pipe(
       map((res) => (res?.data ?? res) as JobApi),
+    );
+  }
+  getApplicationsByResume(): Observable<JobApi[]> {
+    return this.http.get<any>(API_ENDPOINTS.jobs.byResume).pipe(
+      map(res => res?.data || [])
     );
   }
 }

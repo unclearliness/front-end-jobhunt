@@ -1,0 +1,44 @@
+@if (totalPages > 1) {
+  <nav class="app-pagination" aria-label="Pagination Navigation">
+    <!-- Previous Button -->
+    <button
+      class="pagination-btn pagination-btn--prev"
+      [disabled]="currentPage === 1"
+      (click)="onPageClick(currentPage - 1)"
+      aria-label="Go to previous page"
+    >
+      <i-lucide class="pagination-btn__icon" name="chevron-left" aria-hidden="true" />
+      <span>Previous</span>
+    </button>
+
+    <!-- Page Numbers -->
+    <div class="pagination-pages">
+      @for (page of pageRange; track $index) {
+        @if (page === '...') {
+          <span class="pagination-ellipsis">...</span>
+        } @else {
+          <button
+            class="pagination-btn pagination-btn--page"
+            [class.pagination-btn--active]="page === currentPage"
+            (click)="onPageClick(page)"
+            [aria-label]="'Go to page ' + page"
+            [aria-current]="page === currentPage ? 'page' : null"
+          >
+            {{ page }}
+          </button>
+        }
+      }
+    </div>
+
+    <!-- Next Button -->
+    <button
+      class="pagination-btn pagination-btn--next"
+      [disabled]="currentPage === totalPages"
+      (click)="onPageClick(currentPage + 1)"
+      aria-label="Go to next page"
+    >
+      <span>Next</span>
+      <i-lucide class="pagination-btn__icon" name="chevron-right" aria-hidden="true" />
+    </button>
+  </nav>
+}

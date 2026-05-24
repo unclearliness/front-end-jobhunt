@@ -1,26 +1,18 @@
 <main class="explore-companies-page">
   <app-dashboard-header />
 
-  <app-job-search-banner
-    title="Explore Top Companies"
-    searchPlaceholder="Search companies"
-    searchAriaLabel="Search companies"
-    formAriaLabel="Search companies"
-    [showLocationField]="false"
-    (searchSubmitted)="onSearchSubmitted()"
-  />
+  <app-job-search-banner title="Explore Top Companies" searchPlaceholder="Search companies"
+    searchAriaLabel="Search companies" formAriaLabel="Search companies" [showLocationField]="false"
+    (searchSubmitted)="onSearchSubmitted($event)" />
 
   <section class="explore-companies-content" aria-label="Company search results">
     <div class="explore-companies-content__container">
-      <app-job-filter-sidebar
-        class="explore-companies-content__sidebar"
-        [filterGroups]="filterGroups"
-        (filtersReset)="onFiltersReset()"
-      />
+      <app-job-filter-sidebar class="explore-companies-content__sidebar" [filterGroups]="filterGroups"
+        (filtersReset)="onFiltersReset()" />
 
       <div class="explore-companies-content__results">
         <header class="results-header">
-          <p class="results-header__count">{{ companies.length }} companies found</p>
+          <p class="results-header__count">{{ totalItems() }} companies found</p>
 
           <label class="results-header__sort">
             <span class="results-header__sort-label">Sort companies</span>
@@ -33,10 +25,13 @@
         </header>
 
         <div class="company-results-grid">
-          @for (company of companies; track company.id) {
-            <app-company-card [company]="company" (viewCompany)="onViewCompany($event)" />
+          @for (company of companies(); track company.id) {
+          <app-company-card [company]="company" (viewCompany)="onViewCompany($event)" />
           }
         </div>
+
+        <app-pagination [currentPage]="currentPage()" [totalPages]="totalPages()" [totalItems]="totalItems()"
+          [pageSize]="pageSize()" (pageChange)="onPageChange($event)" />
       </div>
     </div>
   </section>

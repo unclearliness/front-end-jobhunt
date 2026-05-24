@@ -10,6 +10,9 @@ export const API_ENDPOINTS = {
   jobs: {
     search: `${API_BASE_URL}/jobs`,
     detail: (id: number | string) => `${API_BASE_URL}/jobs/${id}`,
+    byResume: `${API_BASE_URL}/jobs/by-resume`,
+
+
   },
   companies: {
     search: `${API_BASE_URL}/companies/search`,
@@ -21,5 +24,9 @@ export const API_ENDPOINTS = {
   },
   resumes: {
     create: `${API_BASE_URL}/resumes`,
+  },
+  users: {
+    detail: (id: number | string) => `${API_BASE_URL}/users/${id}`,
+    update: `${API_BASE_URL}/users`,
   },
 } as const;

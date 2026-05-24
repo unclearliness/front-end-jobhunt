@@ -7,10 +7,11 @@ import {
   Search,
 } from 'lucide-angular';
 import { AppButtonComponent } from '../app-button/app-button.component';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-job-search-banner',
-  imports: [AppButtonComponent, LucideAngularModule],
+  imports: [AppButtonComponent, LucideAngularModule, FormsModule],
   providers: [
     {
       provide: LUCIDE_ICONS,
@@ -31,9 +32,9 @@ export class JobSearchBannerComponent {
   @Input() submitLabel = 'Search';
   @Input() formAriaLabel = 'Search jobs';
 
-  @Output() searchSubmitted = new EventEmitter<void>();
+  @Output() searchSubmitted = new EventEmitter<string>();
 
-  onSubmit(): void {
-    this.searchSubmitted.emit();
+  onSubmit(keyword: string): void {
+    this.searchSubmitted.emit(keyword);
   }
 }

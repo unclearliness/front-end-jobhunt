@@ -11,123 +11,109 @@
       <div class="job-detail__layout">
         <div class="job-detail__main">
           @if (detailState().isLoading) {
-            <app-card ariaLabel="Loading job details">
-              <p class="job-detail__status">Loading job details...</p>
-            </app-card>
+          <app-card ariaLabel="Loading job details">
+            <p class="job-detail__status">Loading job details...</p>
+          </app-card>
           } @else if (detailState().errorMessage) {
-            <app-card ariaLabel="Job details error">
-              <p class="job-detail__status job-detail__status--error">
-                {{ detailState().errorMessage }}
-              </p>
-            </app-card>
+          <app-card ariaLabel="Job details error">
+            <p class="job-detail__status job-detail__status--error">
+              {{ detailState().errorMessage }}
+            </p>
+          </app-card>
           } @else {
-            <app-card>
-              <div class="job-hero-card">
-                <div class="job-hero-card__logo" aria-hidden="true">
-                  @if (detailState().job.logoUrl) {
-                    <img
-                      class="job-hero-card__logo-image"
-                      [src]="detailState().job.logoUrl"
-                      [alt]="detailState().job.company + ' logo'"
-                    />
-                  } @else {
-                    {{ detailState().job.initials }}
-                  }
+          <app-card>
+            <div class="job-hero-card">
+              <div class="job-hero-card__logo" aria-hidden="true">
+                @if (detailState().job.logoUrl) {
+                <img class="job-hero-card__logo-image" [src]="detailState().job.logoUrl"
+                  [alt]="detailState().job.company + ' logo'" />
+                } @else {
+                {{ detailState().job.initials }}
+                }
+              </div>
+
+              <div class="job-hero-card__content">
+                <h1 class="job-hero-card__title" id="job-detail-title">
+                  {{ detailState().job.title }}
+                </h1>
+                <p class="job-hero-card__company">{{ detailState().job.company }}</p>
+
+                <div class="job-hero-card__meta">
+                  <span class="job-meta-item">
+                    <i-lucide class="job-meta-item__icon" name="map-pin" aria-hidden="true" />
+                    <span>{{ detailState().job.location }}</span>
+                  </span>
+                  <span class="job-meta-item">
+                    <i-lucide class="job-meta-item__icon" name="dollar-sign" aria-hidden="true" />
+                    <span>{{ detailState().job.salary }}</span>
+                  </span>
+                  <span class="job-meta-item">
+                    <i-lucide class="job-meta-item__icon" name="clock" aria-hidden="true" />
+                    <span>{{ detailState().job.postedAt }}</span>
+                  </span>
                 </div>
 
-                <div class="job-hero-card__content">
-                  <h1 class="job-hero-card__title" id="job-detail-title">
-                    {{ detailState().job.title }}
-                  </h1>
-                  <p class="job-hero-card__company">{{ detailState().job.company }}</p>
-
-                  <div class="job-hero-card__meta">
-                    <span class="job-meta-item">
-                      <i-lucide class="job-meta-item__icon" name="map-pin" aria-hidden="true" />
-                      <span>{{ detailState().job.location }}</span>
-                    </span>
-                    <span class="job-meta-item">
-                      <i-lucide class="job-meta-item__icon" name="dollar-sign" aria-hidden="true" />
-                      <span>{{ detailState().job.salary }}</span>
-                    </span>
-                    <span class="job-meta-item">
-                      <i-lucide class="job-meta-item__icon" name="clock" aria-hidden="true" />
-                      <span>{{ detailState().job.postedAt }}</span>
-                    </span>
-                  </div>
-
-                  <div class="job-hero-card__tags" aria-label="Job tags">
-                    @for (tag of detailState().job.tags; track tag; let isFirst = $first) {
-                      <app-badge [variant]="isFirst ? 'default' : 'outline'">{{ tag }}</app-badge>
-                    }
-                  </div>
+                <div class="job-hero-card__tags" aria-label="Job tags">
+                  @for (tag of detailState().job.tags; track tag; let isFirst = $first) {
+                  <app-badge [variant]="isFirst ? 'default' : 'outline'">{{ tag }}</app-badge>
+                  }
                 </div>
               </div>
-            </app-card>
+            </div>
+          </app-card>
 
-            <app-card cardTitle="Job Details" titleId="job-description-title">
-              @for (section of detailState().sections; track section.title; let sectionIndex = $index) {
-                <section
-                  class="description-section"
-                  [attr.aria-labelledby]="'job-section-' + sectionIndex"
-                >
-                  <h3 class="description-section__title" [id]="'job-section-' + sectionIndex">
-                    {{ section.title }}
-                  </h3>
+          <app-card cardTitle="Job Details" titleId="job-description-title">
+            @for (section of detailState().sections; track section.title; let sectionIndex = $index) {
+            <section class="description-section" [attr.aria-labelledby]="'job-section-' + sectionIndex">
+              <h3 class="description-section__title" [id]="'job-section-' + sectionIndex">
+                {{ section.title }}
+              </h3>
 
-                  @if (section.content) {
-                    <p class="description-section__text">{{ section.content }}</p>
-                  }
-
-                  @if (section.items?.length) {
-                    <ul class="description-list">
-                      @for (item of section.items; track item) {
-                        <li>{{ item }}</li>
-                      }
-                    </ul>
-                  }
-                </section>
+              @if (section.content) {
+              <p class="description-section__text">{{ section.content }}</p>
               }
-            </app-card>
+
+              @if (section.items?.length) {
+              <ul class="description-list">
+                @for (item of section.items; track item) {
+                <li>{{ item }}</li>
+                }
+              </ul>
+              }
+            </section>
+            }
+          </app-card>
           }
         </div>
 
         <aside class="job-detail__sidebar" aria-label="Job actions and company details">
           @if (!detailState().isLoading && !detailState().errorMessage) {
-            <app-card class="action-card" ariaLabel="Apply for job">
-              <app-button variant="primary" [fullWidth]="true" (buttonClick)="onApply()">
-                Apply Now
+          <app-card class="action-card" ariaLabel="Apply for job">
+            <app-button variant="primary" [fullWidth]="true" (buttonClick)="onApply()">
+              Apply Now
+            </app-button>
+
+            <div class="action-card__secondary-actions">
+              <app-button [fullWidth]="true" (buttonClick)="onSave()">
+                <i-lucide class="button-icon" name="bookmark" aria-hidden="true" />
+                <span>Save</span>
               </app-button>
-
-              <div class="action-card__secondary-actions">
-                <app-button [fullWidth]="true" (buttonClick)="onSave()">
-                  <i-lucide class="button-icon" name="bookmark" aria-hidden="true" />
-                  <span>Save</span>
-                </app-button>
-                <app-button [fullWidth]="true" (buttonClick)="onShare()">
-                  <i-lucide class="button-icon" name="share-2" aria-hidden="true" />
-                  <span>Share</span>
-                </app-button>
-              </div>
-            </app-card>
-
-            <app-card cardTitle="About the Company" titleId="company-profile-title">
-              <app-company-info
-                [company]="detailState().companyInfo"
-                headingLevel="h3"
-                variant="compact"
-              />
-              <app-button [fullWidth]="true" (buttonClick)="onViewCompanyProfile()">
-                View Company Profile
+              <app-button [fullWidth]="true" (buttonClick)="onShare()">
+                <i-lucide class="button-icon" name="share-2" aria-hidden="true" />
+                <span>Share</span>
               </app-button>
-            </app-card>
+            </div>
+          </app-card>
 
-            <app-quick-stats
-              title="Job Summary"
-              titleId="job-summary-title"
-              variant="summary"
-              [items]="detailState().summaryItems"
-            />
+          <app-card cardTitle="About the Company" titleId="company-profile-title">
+            <app-company-info [company]="detailState().companyInfo" headingLevel="h3" variant="compact" />
+            <app-button [fullWidth]="true" (buttonClick)="onViewCompanyProfile()">
+              View Company Profile
+            </app-button>
+          </app-card>
+
+          <app-quick-stats title="Job Summary" titleId="job-summary-title" variant="summary"
+            [items]="detailState().summaryItems" />
           }
         </aside>
       </div>
@@ -135,14 +121,7 @@
   </section>
 </main>
 
-<app-modal-form
-  [open]="isApplyModalOpen()"
-  [title]="'Apply for ' + detailState().job.title"
+<app-modal-form [open]="isApplyModalOpen()" [title]="'Apply for ' + detailState().job.title"
   [subtitle]="'Complete the form below to submit your application to ' + detailState().job.company + '.'"
-  [fields]="applyModalFields"
-  submitLabel="Submit Application"
-  cancelLabel="Cancel"
-  (closed)="onApplyModalClose()"
-  (submitted)="onApplyModalSubmit($event)"
-  [submitAction]="applySubmitAction"
-/>
+  [fields]="applyModalFields" submitLabel="Submit Application" cancelLabel="Cancel" (closed)="onApplyModalClose()"
+  (submitted)="onApplyModalSubmit($event)" />
