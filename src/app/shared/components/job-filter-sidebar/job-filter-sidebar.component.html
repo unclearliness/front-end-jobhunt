@@ -6,28 +6,23 @@
 
   <div class="job-filters__groups">
     @for (group of filterGroups; track group.title; let groupIndex = $index) {
-      <section class="job-filter-group" [attr.aria-labelledby]="'filter-group-' + groupIndex">
-        <h3 class="job-filter-group__title" [id]="'filter-group-' + groupIndex">
-          {{ group.title }}
-        </h3>
+    <section class="job-filter-group" [attr.aria-labelledby]="'filter-group-' + groupIndex">
+      <h3 class="job-filter-group__title" [id]="'filter-group-' + groupIndex">
+        {{ group.title }}
+      </h3>
 
-        <div class="job-filter-group__options">
-          @for (option of group.options; track option.label) {
-            <label class="job-filter-option">
-              <input
-                class="job-filter-option__input"
-                type="checkbox"
-                [checked]="option.checked"
-              />
-              <span class="job-filter-option__label">{{ option.label }}</span>
-            </label>
-          }
-        </div>
-      </section>
+      <div class="job-filter-group__options">
+        @for (option of group.options; track option.label) {
+        <label class="job-filter-option">
+          <input class="job-filter-option__input" type="checkbox" [checked]="option.checked"
+            (change)="onToggleOption(group.title, option.label)" />
+          <span class="job-filter-option__label">{{ option.label }}</span>
+        </label>
+        }
+      </div>
+    </section>
     }
   </div>
 
-  <div class="job-filters__actions">
-    <app-button [fullWidth]="true" (buttonClick)="onResetFilters()">Reset Filters</app-button>
-  </div>
+
 </aside>

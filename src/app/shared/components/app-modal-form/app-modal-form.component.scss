@@ -132,6 +132,14 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
+.app-modal-form__input:disabled {
+  background: var(--muted);
+  color: var(--muted-foreground);
+  border-color: var(--border);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
 .app-modal-form__hint,
 .app-modal-form__dropzone-hint {
   margin: 0;
@@ -156,6 +164,22 @@
 .app-modal-form__dropzone--dragging {
   border-color: var(--primary);
   background: rgba(37, 99, 235, 0.06);
+}
+
+.app-modal-form__dropzone--disabled {
+  opacity: 0.7;
+  background: var(--muted);
+  border-color: var(--border);
+  cursor: not-allowed;
+  pointer-events: none;
+
+  .app-modal-form__file-button {
+    background: var(--muted);
+    color: var(--muted-foreground);
+    border-color: var(--border);
+    cursor: not-allowed;
+    pointer-events: none;
+  }
 }
 
 .app-modal-form__upload-icon {

@@ -34,8 +34,12 @@ export interface FilterGroup {
 export class JobFilterSidebarComponent {
   @Input() filterGroups: readonly FilterGroup[] = [];
   @Output() filtersReset = new EventEmitter<void>();
+  @Output() filterChanged = new EventEmitter<{ groupTitle: string; optionLabel: string; checked: boolean }>();
 
   onResetFilters(): void {
     this.filtersReset.emit();
+  }
+  onToggleOption(groupTitle: string, optionLabel: string): void {
+    this.filterChanged.emit({ groupTitle, optionLabel, checked: true });
   }
 }

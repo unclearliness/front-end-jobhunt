@@ -58,14 +58,15 @@ export class LoginComponent {
       return '/admin-dashboard';
     }
 
-    if (
-      normalizedRole.includes('hr') ||
-      normalizedRole.includes('employer') ||
-      normalizedRole.includes('company') ||
-      normalizedRole.includes('recruiter')
-    ) {
+    if (normalizedRole.includes('hr')) {
       return '/hr-dashboard';
     }
+
+    if (normalizedRole.includes('user')) {
+      return '/dashboard';
+    }
+
+
 
     return '/dashboard';
   }

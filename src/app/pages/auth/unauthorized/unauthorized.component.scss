@@ -1,0 +1,215 @@
+.unauthorized-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--background);
+  overflow: hidden;
+  font-family: inherit;
+  padding: 24px;
+  transition: background-color 0.3s ease;
+
+  // Background gradient circles for rich aesthetic
+  .background-blobs {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    pointer-events: none;
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.15;
+      animation: float 20s infinite alternate ease-in-out;
+    }
+
+    .blob-1 {
+      width: 400px;
+      height: 400px;
+      background: var(--primary, #2563eb);
+      top: -100px;
+      left: -100px;
+    }
+
+    .blob-2 {
+      width: 500px;
+      height: 500px;
+      background: var(--destructive, #d4183d);
+      bottom: -150px;
+      right: -100px;
+      animation-delay: -5s;
+    }
+  }
+
+  // Card Container with Glassmorphism
+  .card-container {
+    position: relative;
+    z-index: 1;
+    max-width: 500px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius-xl, 14px);
+    padding: 40px 32px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+    // Dark Mode adaptations
+    :host-context(.dark) & {
+      background: rgba(22, 22, 22, 0.75);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  // Title Heading with Icon inline
+  .title-text {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--primary, #2563eb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    .icon-alert {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  // Description text
+  .description {
+    color: var(--muted-foreground, #717182);
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+
+  // User details section
+  .user-info {
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: var(--radius-md, 8px);
+    padding: 16px;
+    margin-bottom: 32px;
+    text-align: left;
+
+    :host-context(.dark) & {
+      background: rgba(255, 255, 255, 0.02);
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .label {
+        font-size: 13px;
+        color: var(--muted-foreground, #717182);
+      }
+
+      .value {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--foreground, #1a1a1a);
+
+        &.badge {
+          background: var(--accent, #e9ebef);
+          padding: 4px 8px;
+          border-radius: var(--radius-sm, 6px);
+          text-transform: uppercase;
+          font-size: 11px;
+          letter-spacing: 0.5px;
+
+          :host-context(.dark) & {
+            background: var(--muted, #262626);
+            color: var(--foreground, #fafafa);
+          }
+        }
+      }
+    }
+  }
+
+  // Navigation and Action Buttons
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .btn-action {
+      width: 100%;
+      display: block;
+    }
+
+    .button-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 500;
+
+      .btn-icon {
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+// Keyframes animations
+@keyframes float {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -20px) scale(1.1);
+  }
+  100% {
+    transform: translate(-10px, 40px) scale(0.95);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(212, 24, 61, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(212, 24, 61, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(212, 24, 61, 0);
+  }
+}

@@ -43,4 +43,14 @@ export class CompanyService {
       .get<{ data: CompanyApi }>(API_ENDPOINTS.companies.detail(id))
       .pipe(map((res) => res.data));
   }
+
+  createCompany(body: CompanyApi): Observable<unknown> {
+    return this.http.post(API_ENDPOINTS.companies.create, body);
+  }
+  editCompany(body: CompanyApi): Observable<unknown> {
+    return this.http.put(API_ENDPOINTS.companies.update, body);
+  }
+  deleteCompany(id: number): Observable<unknown> {
+    return this.http.delete(API_ENDPOINTS.companies.delete(id));
+  }
 }

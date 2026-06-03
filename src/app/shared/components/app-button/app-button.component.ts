@@ -15,6 +15,7 @@ export class AppButtonComponent {
   @Input() size: ButtonSize = 'default';
   @Input() type: ButtonType = 'button';
   @Input() fullWidth = false;
+  @Input() disabled = false;
 
   @Output() buttonClick = new EventEmitter<void>();
 

@@ -5,285 +5,295 @@
     <aside class="admin-dashboard-sidebar" aria-label="Admin dashboard navigation">
       <nav class="admin-dashboard-nav">
         @for (item of dashboardNavigation; track item.id) {
-          <button
-            class="admin-dashboard-nav__button admin-dashboard-nav__button--{{ item.id }}"
-            [class.is-active]="isActive(item.id)"
-            [id]="item.buttonId"
-            type="button"
-            [attr.aria-controls]="item.frameId"
-            [attr.aria-current]="isActive(item.id) ? 'page' : null"
-            [attr.data-prototype-target]="item.frameId"
-            data-prototype-action="On Click -> Navigate To -> Slide In"
-            (click)="selectFrame(item.id)"
-          >
-            <i-lucide class="admin-dashboard-nav__icon" [name]="item.icon" aria-hidden="true" />
-            <span>{{ item.label }}</span>
-          </button>
+        <button class="admin-dashboard-nav__button admin-dashboard-nav__button--{{ item.id }}"
+          [class.is-active]="isActive(item.id)" [id]="item.buttonId" type="button" [attr.aria-controls]="item.frameId"
+          [attr.aria-current]="isActive(item.id) ? 'page' : null" [attr.data-prototype-target]="item.frameId"
+          data-prototype-action="On Click -> Navigate To -> Slide In" (click)="selectFrame(item.id)">
+          <i-lucide class="admin-dashboard-nav__icon" [name]="item.icon" aria-hidden="true" />
+          <span>{{ item.label }}</span>
+        </button>
         }
       </nav>
     </aside>
 
     <div class="admin-dashboard-content">
       @switch (activeFrame()) {
-        @case ('overview') {
-          <section
-            class="dashboard-frame dashboard-frame--overview"
-            id="frame-admin-overview"
-            aria-labelledby="frame-admin-overview-title"
-          >
-            <header class="frame-header">
-              <h1 id="frame-admin-overview-title">Overview</h1>
-              <p>Platform statistics and insights</p>
-            </header>
+      @case ('overview') {
+      <section class="dashboard-frame dashboard-frame--overview" id="frame-admin-overview"
+        aria-labelledby="frame-admin-overview-title">
+        <header class="frame-header">
+          <h1 id="frame-admin-overview-title">Overview</h1>
+          <p>Platform statistics and insights</p>
+        </header>
 
-            <div class="stats-grid">
-              @for (stat of overviewStats; track stat.label) {
-                <article class="stat-card">
-                  <div class="stat-card__header">
-                    <h2>{{ stat.label }}</h2>
-                    <i-lucide [name]="stat.icon" aria-hidden="true" />
-                  </div>
-                  <strong>{{ stat.value }}</strong>
-                  <span>{{ stat.helper }}</span>
-                </article>
+        <div class="stats-grid">
+          @for (stat of overviewStats(); track stat.label) {
+          <article class="stat-card">
+            <div class="stat-card__header">
+              <h2>{{ stat.label }}</h2>
+              <i-lucide [name]="stat.icon" aria-hidden="true" />
+            </div>
+            <strong>{{ stat.value }}</strong>
+            <span>{{ stat.helper }}</span>
+          </article>
+          }
+        </div>
+
+        <div class="overview-grid">
+          <app-card cardTitle="Quick Actions" titleId="admin-quick-actions-title">
+            <div class="quick-actions">
+              <button class="quick-action" id="button-quick-users" type="button"
+                aria-controls="frame-admin-users" (click)="selectFrame('users')">
+                <span>
+                  <strong>Manage Users</strong>
+                  <small>Review accounts, roles, status, and recent signups</small>
+                </span>
+                <i-lucide name="chevron-right" aria-hidden="true" />
+              </button>
+              <button class="quick-action" id="button-quick-companies" type="button"
+                aria-controls="frame-admin-companies" (click)="selectFrame('companies')">
+                <span>
+                  <strong>Manage Companies</strong>
+                  <small>Moderate employer profiles, verification status, and activity</small>
+                </span>
+                <i-lucide name="chevron-right" aria-hidden="true" />
+              </button>
+              <button class="quick-action" id="button-quick-job-postings" type="button"
+                aria-controls="frame-admin-job-postings" (click)="selectFrame('job-postings')">
+                <span>
+                  <strong>Manage Job Postings</strong>
+                  <small>Review jobs, publish queues, and remove unsafe postings</small>
+                </span>
+                <i-lucide name="chevron-right" aria-hidden="true" />
+              </button>
+            </div>
+          </app-card>
+        </div>
+      </section>
+      }
+
+      @case ('users') {
+      <section class="dashboard-frame dashboard-frame--users" id="frame-admin-users"
+        aria-labelledby="frame-admin-users-title">
+        <header class="frame-header frame-header--with-action">
+          <div>
+            <h1 id="frame-admin-users-title">Users</h1>
+            <p>Review accounts, roles, status, and recent signups</p>
+          </div>
+          <app-button variant="primary" size="compact" (buttonClick)="onOpenAddUser()">Add
+            User</app-button>
+        </header>
+
+        <div class="frame-toolbar">
+          <label class="search-control">
+            <i-lucide name="search" aria-hidden="true" />
+            <input #searchInput type="search" placeholder="Search users" aria-label="Search users"
+              (keyup.enter)="onSearch(searchInput.value)" />
+
+          </label>
+
+        </div>
+
+        <div class="data-list">
+          @for (user of users(); track user.email) {
+          <article class="data-row">
+            <div class="avatar" aria-hidden="true">
+              @if (user.logo) {
+              <img [src]="user.logo" [alt]="user.name + ' avatar'" class="avatar-image" />
+              } @else {
+              {{ user.initials || user.name.slice(0, 1) }}
               }
             </div>
-
-            <div class="overview-grid">
-              <app-card cardTitle="Recent Activity" titleId="admin-recent-activity-title">
-                <div class="activity-list">
-                  @for (activity of recentActivities; track activity.title) {
-                    <article class="activity-item">
-                      <span>
-                        <strong>{{ activity.title }}</strong>
-                        <small>{{ activity.detail }}</small>
-                      </span>
-                      <time>{{ activity.time }}</time>
-                    </article>
-                  }
-                </div>
-              </app-card>
-
-              <app-card cardTitle="Quick Stats" titleId="admin-quick-stats-title">
-                <div class="quick-stats">
-                  @for (stat of quickStats; track stat.label) {
-                    <div class="quick-stat">
-                      <span>{{ stat.label }}</span>
-                      <strong>{{ stat.value }}</strong>
-                    </div>
-                  }
-                </div>
-              </app-card>
+            <div class="data-row__main">
+              <h2>{{ user.name }}</h2>
+              <p>{{ user.email }} · {{ user.role }}</p>
+              <small>Joined {{ user.joined }}</small>
             </div>
-          </section>
-        }
+            <div class="row-actions">
+              <button class="icon-button" type="button" aria-label="View user" (click)="onOpenViewUser(user)">
+                <i-lucide name="eye" aria-hidden="true" />
+              </button>
+              <button class="icon-button" type="button" aria-label="Edit user" (click)="onOpenEditUser(user)">
+                <i-lucide name="edit" aria-hidden="true" />
+              </button>
+              <button class="icon-button icon-button--danger" type="button" aria-label="Delete user" (click)="onDeleteUser(user.id)">
+                <i-lucide name="trash-2" aria-hidden="true" />
+              </button>
+            </div>
+          </article>
+          }
+        </div>
+        <app-pagination [currentPage]="currentPage()" [totalPages]="totalPages()" [totalItems]="totalItems()"
+          [pageSize]="pageSize()" (pageChange)="onPageChange($event)" />
+      </section>
+      }
 
-        @case ('users') {
-          <section
-            class="dashboard-frame dashboard-frame--users"
-            id="frame-admin-users"
-            aria-labelledby="frame-admin-users-title"
-          >
-            <header class="frame-header frame-header--with-action">
-              <div>
-                <h1 id="frame-admin-users-title">Users</h1>
-                <p>Review accounts, roles, status, and recent signups</p>
+      @case ('companies') {
+      <section class="dashboard-frame dashboard-frame--companies" id="frame-admin-companies"
+        aria-labelledby="frame-admin-companies-title">
+        <header class="frame-header">
+          <h1 id="frame-admin-companies-title">Companies</h1>
+          <p>Moderate employer profiles, verification status, and company activity</p>
+        </header>
+
+        <div class="frame-toolbar">
+          <label class="search-control">
+            <i-lucide name="search" aria-hidden="true" />
+            <input #companySearchInput type="search" placeholder="Search companies" aria-label="Search companies"
+              (keyup.enter)="onSearchCompanies(companySearchInput.value)" />
+          </label>
+        </div>
+
+        <div class="data-list">
+          @for (company of companies(); track company.name) {
+          <article class="data-row">
+            <div class="company-mark" aria-hidden="true">
+              @if (company.logo) {
+              <img [src]="company.logo" [alt]="company.name + ' logo'" class="avatar-image" />
+              } @else {
+              {{ company.name.slice(0, 2).toUpperCase() }}
+              }
+            </div>
+            <div class="data-row__main">
+              <h2>{{ company.name }}</h2>
+              <p>Industry: {{ company.owner }} · {{ company.jobs }}</p>
+              <small>{{ company.verified }}</small>
+            </div>
+            <span class="status-badge {{ company.statusClass }}">{{ company.status }}</span>
+            <div class="row-actions">
+              <button class="icon-button" type="button" aria-label="View company" (click)="onOpenViewCompany(company)">
+                <i-lucide name="eye" aria-hidden="true" />
+              </button>
+              <button class="icon-button icon-button--danger" type="button" aria-label="Delete company" (click)="onDeleteCompany(company.id)">
+                <i-lucide name="trash-2" aria-hidden="true" />
+              </button>
+            </div>
+          </article>
+          }
+        </div>
+        <app-pagination [currentPage]="companyCurrentPage()" [totalPages]="companyTotalPages()" [totalItems]="companyTotalItems()"
+          [pageSize]="companyPageSize()" (pageChange)="onCompanyPageChange($event)" />
+      </section>
+      }
+
+      @case ('job-postings') {
+      <section class="dashboard-frame dashboard-frame--job-postings" id="frame-admin-job-postings"
+        aria-labelledby="frame-admin-job-postings-title">
+        <header class="frame-header">
+          <h1 id="frame-admin-job-postings-title">Job Postings</h1>
+          <p>Review jobs, publish queues, and remove unsafe postings</p>
+        </header>
+
+        <div class="frame-toolbar">
+          <label class="search-control">
+            <i-lucide name="search" aria-hidden="true" />
+            <input #jobSearchInput type="search" placeholder="Search jobs" aria-label="Search jobs"
+              (keyup.enter)="onSearchJobs(jobSearchInput.value)" />
+          </label>
+        </div>
+
+        <div class="data-list">
+          @for (job of jobs(); track job.id) {
+          <article class="data-row">
+            <div class="company-mark" aria-hidden="true">
+              @if (job.logo) {
+              <img [src]="job.logo" [alt]="job.companyName + ' logo'" class="avatar-image" />
+              } @else {
+              {{ job.initials }}
+              }
+            </div>
+            <div class="data-row__main">
+              <h2>{{ job.title }}</h2>
+              <p>{{ job.companyName }} · {{ job.location }} · {{ job.salary }} ({{ job.level }})</p>
+              <small>Posted {{ job.posted }}</small>
+            </div>
+            <div class="row-actions">
+              <button class="icon-button" type="button" aria-label="View posting" (click)="onOpenViewJob(job)">
+                <i-lucide name="eye" aria-hidden="true" />
+              </button>
+              <button class="icon-button icon-button--danger" type="button" aria-label="Delete posting" (click)="onDeleteJob(job.id)">
+                <i-lucide name="trash-2" aria-hidden="true" />
+              </button>
+            </div>
+          </article>
+          }
+        </div>
+
+        <app-pagination [currentPage]="jobCurrentPage()" [totalPages]="jobTotalPages()" [totalItems]="jobTotalItems()"
+          [pageSize]="jobPageSize()" (pageChange)="onJobPageChange($event)" />
+      </section>
+      }
+
+      @case ('roles') {
+      <section class="dashboard-frame dashboard-frame--roles" id="frame-admin-roles"
+        aria-labelledby="frame-admin-roles-title">
+        <header class="frame-header frame-header--with-action">
+          <div>
+            <h1 id="frame-admin-roles-title">Roles</h1>
+            <p>Manage platform role definitions and role membership</p>
+          </div>
+          <app-button variant="primary" size="compact">Create Role</app-button>
+        </header>
+
+        <div class="role-grid">
+          @for (role of roles; track role.name) {
+          <article class="role-card">
+            <header>
+              <div class="role-icon" aria-hidden="true">
+                <i-lucide name="user-check" />
               </div>
-              <app-button variant="primary" size="compact">Add User</app-button>
-            </header>
-
-            <div class="frame-toolbar">
-              <label class="search-control">
-                <i-lucide name="search" aria-hidden="true" />
-                <input type="search" placeholder="Search users" aria-label="Search users" />
-              </label>
-              <select class="select-control" aria-label="Filter users">
-                <option>All Roles</option>
-                <option>Admin</option>
-                <option>HR</option>
-                <option>User</option>
-              </select>
-            </div>
-
-            <div class="data-list">
-              @for (user of users; track user.email) {
-                <article class="data-row">
-                  <div class="avatar" aria-hidden="true">{{ user.name.slice(0, 1) }}</div>
-                  <div class="data-row__main">
-                    <h2>{{ user.name }}</h2>
-                    <p>{{ user.email }} · {{ user.role }}</p>
-                    <small>Joined {{ user.joined }}</small>
-                  </div>
-                  <span class="status-badge {{ user.statusClass }}">{{ user.status }}</span>
-                  <div class="row-actions">
-                    <button class="icon-button" type="button" aria-label="View user">
-                      <i-lucide name="eye" aria-hidden="true" />
-                    </button>
-                    <button class="icon-button" type="button" aria-label="Edit user">
-                      <i-lucide name="edit" aria-hidden="true" />
-                    </button>
-                  </div>
-                </article>
-              }
-            </div>
-          </section>
-        }
-
-        @case ('companies') {
-          <section
-            class="dashboard-frame dashboard-frame--companies"
-            id="frame-admin-companies"
-            aria-labelledby="frame-admin-companies-title"
-          >
-            <header class="frame-header">
-              <h1 id="frame-admin-companies-title">Companies</h1>
-              <p>Moderate employer profiles, verification status, and company activity</p>
-            </header>
-
-            <div class="frame-toolbar">
-              <label class="search-control">
-                <i-lucide name="search" aria-hidden="true" />
-                <input type="search" placeholder="Search companies" aria-label="Search companies" />
-              </label>
-              <select class="select-control" aria-label="Filter companies">
-                <option>All Companies</option>
-                <option>Verified</option>
-                <option>Pending</option>
-              </select>
-            </div>
-
-            <div class="data-list">
-              @for (company of companies; track company.name) {
-                <article class="data-row">
-                  <div class="company-mark" aria-hidden="true">{{ company.name.slice(0, 2).toUpperCase() }}</div>
-                  <div class="data-row__main">
-                    <h2>{{ company.name }}</h2>
-                    <p>Owner: {{ company.owner }} · {{ company.jobs }} jobs</p>
-                    <small>{{ company.verified }}</small>
-                  </div>
-                  <span class="status-badge {{ company.statusClass }}">{{ company.status }}</span>
-                  <div class="row-actions">
-                    <button class="icon-button" type="button" aria-label="Approve company">
-                      <i-lucide name="circle-check" aria-hidden="true" />
-                    </button>
-                    <button class="icon-button" type="button" aria-label="Reject company">
-                      <i-lucide name="circle-x" aria-hidden="true" />
-                    </button>
-                  </div>
-                </article>
-              }
-            </div>
-          </section>
-        }
-
-        @case ('job-postings') {
-          <section
-            class="dashboard-frame dashboard-frame--job-postings"
-            id="frame-admin-job-postings"
-            aria-labelledby="frame-admin-job-postings-title"
-          >
-            <header class="frame-header">
-              <h1 id="frame-admin-job-postings-title">Job Postings</h1>
-              <p>Review jobs, publish queues, and remove unsafe postings</p>
-            </header>
-
-            <div class="data-list">
-              @for (job of jobPostings; track job.title) {
-                <article class="data-row">
-                  <div class="company-mark" aria-hidden="true">{{ job.company.slice(0, 2).toUpperCase() }}</div>
-                  <div class="data-row__main">
-                    <h2>{{ job.title }}</h2>
-                    <p>{{ job.company }} · {{ job.applicants }} applicants</p>
-                    <small>Posted {{ job.posted }}</small>
-                  </div>
-                  <span class="status-badge {{ job.statusClass }}">{{ job.status }}</span>
-                  <div class="row-actions">
-                    <button class="icon-button" type="button" aria-label="View posting">
-                      <i-lucide name="eye" aria-hidden="true" />
-                    </button>
-                    <button class="icon-button" type="button" aria-label="Delete posting">
-                      <i-lucide name="trash-2" aria-hidden="true" />
-                    </button>
-                  </div>
-                </article>
-              }
-            </div>
-          </section>
-        }
-
-        @case ('roles') {
-          <section
-            class="dashboard-frame dashboard-frame--roles"
-            id="frame-admin-roles"
-            aria-labelledby="frame-admin-roles-title"
-          >
-            <header class="frame-header frame-header--with-action">
               <div>
-                <h1 id="frame-admin-roles-title">Roles</h1>
-                <p>Manage platform role definitions and role membership</p>
+                <h2>{{ role.name }}</h2>
+                <p>{{ role.description }}</p>
               </div>
-              <app-button variant="primary" size="compact">Create Role</app-button>
             </header>
-
-            <div class="role-grid">
-              @for (role of roles; track role.name) {
-                <article class="role-card">
-                  <header>
-                    <div class="role-icon" aria-hidden="true">
-                      <i-lucide name="user-check" />
-                    </div>
-                    <div>
-                      <h2>{{ role.name }}</h2>
-                      <p>{{ role.description }}</p>
-                    </div>
-                  </header>
-                  <div class="role-meta">
-                    <span>{{ role.users }} users</span>
-                    <span>{{ role.permissions }} permissions</span>
-                  </div>
-                  <footer>
-                    <app-button variant="outline" size="compact" [fullWidth]="true">Manage Role</app-button>
-                  </footer>
-                </article>
-              }
+            <div class="role-meta">
+              <span>{{ role.users }} users</span>
+              <span>{{ role.permissions }} permissions</span>
             </div>
-          </section>
-        }
+            <footer>
+              <app-button variant="outline" size="compact" [fullWidth]="true">Manage Role</app-button>
+            </footer>
+          </article>
+          }
+        </div>
+      </section>
+      }
 
-        @case ('permissions') {
-          <section
-            class="dashboard-frame dashboard-frame--permissions"
-            id="frame-admin-permissions"
-            aria-labelledby="frame-admin-permissions-title"
-          >
-            <header class="frame-header frame-header--with-action">
-              <div>
-                <h1 id="frame-admin-permissions-title">Permissions</h1>
-                <p>Configure access controls for admin, HR, and user workflows</p>
-              </div>
-              <app-button variant="primary" size="compact">Save Changes</app-button>
-            </header>
+      @case ('permissions') {
+      <section class="dashboard-frame dashboard-frame--permissions" id="frame-admin-permissions"
+        aria-labelledby="frame-admin-permissions-title">
+        <header class="frame-header frame-header--with-action">
+          <div>
+            <h1 id="frame-admin-permissions-title">Permissions</h1>
+            <p>Configure access controls for admin, HR, and user workflows</p>
+          </div>
+          <app-button variant="primary" size="compact">Save Changes</app-button>
+        </header>
 
-            <div class="permission-list">
-              @for (permission of permissions; track permission.name) {
-                <article class="permission-row">
-                  <div class="permission-row__main">
-                    <i-lucide name="shield-check" aria-hidden="true" />
-                    <span>
-                      <strong>{{ permission.name }}</strong>
-                      <small>{{ permission.description }}</small>
-                    </span>
-                  </div>
-                  <label class="switch">
-                    <input type="checkbox" [checked]="permission.enabled" />
-                    <span></span>
-                  </label>
-                </article>
-              }
+        <div class="permission-list">
+          @for (permission of permissions; track permission.name) {
+          <article class="permission-row">
+            <div class="permission-row__main">
+              <i-lucide name="shield-check" aria-hidden="true" />
+              <span>
+                <strong>{{ permission.name }}</strong>
+                <small>{{ permission.description }}</small>
+              </span>
             </div>
-          </section>
-        }
+            <label class="switch">
+              <input type="checkbox" [checked]="permission.enabled" />
+              <span></span>
+            </label>
+          </article>
+          }
+        </div>
+      </section>
+      }
       }
     </div>
   </div>
 </main>
+<app-modal-form [open]="isModalOpen()" [title]="modalTitle()" [fields]="currentModalFields()"
+  [initialValues]="modalInitialValues()" [submitLabel]="modalSubmitLabel()" [hideSubmit]="modalHideSubmit()"
+  cancelLabel="Close" (closed)="isModalOpen.set(false)" (submitted)="onSubmitModal($event)" />

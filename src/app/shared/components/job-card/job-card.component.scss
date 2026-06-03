@@ -102,8 +102,15 @@
 .job-card__bookmark-icon {
   width: 18px;
   height: 18px;
-  display: block;
-  line-height: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  ::ng-deep svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
 }
 
 /* Description */
@@ -147,10 +154,17 @@
 .job-card__detail-icon {
   width: 16px;
   height: 16px;
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--muted-foreground);
   flex: 0 0 auto;
-  line-height: 0;
+
+  ::ng-deep svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
 }
 
 /* Meta Information */
@@ -173,16 +187,31 @@
 }
 
 .job-card__time-icon {
-  width: 21px;
-  height: 21px;
-  display: block;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--muted-foreground);
   flex: 0 0 auto;
-  line-height: 0;
+
+  ::ng-deep svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
 }
 
 /* Tags Section */
 .job-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+/* Skills Section */
+.job-card__skills {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;

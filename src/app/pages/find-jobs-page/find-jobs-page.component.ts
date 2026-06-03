@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   JobCardComponent,
@@ -10,6 +10,11 @@ import {
 } from '../../shared/components/job-filter-sidebar/job-filter-sidebar.component';
 import { JobSearchBannerComponent } from '../../shared/components/job-search-banner/job-search-banner.component';
 import { DashboardHeaderComponent } from '../../shared/layouts/dashboard-header/dashboard-header.component';
+import { JobService } from '../../services/job.service';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { switchMap, tap } from 'rxjs';
+import { API_ENDPOINTS } from '../../shared/constants/api-endpoints';
+import { AppPaginationComponent } from "../../shared/components/app-pagination/app-pagination.component";
 
 export interface JobSearchResult extends JobCardData {
   readonly description: string;
@@ -23,6 +28,7 @@ export interface JobSearchResult extends JobCardData {
     JobCardComponent,
     JobFilterSidebarComponent,
     JobSearchBannerComponent,
+    AppPaginationComponent
   ],
   templateUrl: './find-jobs-page.component.html',
   styleUrl: './find-jobs-page.component.scss',
@@ -30,125 +36,196 @@ export interface JobSearchResult extends JobCardData {
 })
 export class FindJobsPageComponent {
   private readonly router = inject(Router);
+  private readonly jobService = inject(JobService);
 
-  readonly jobs: readonly JobSearchResult[] = [
-    {
-      id: 1,
-      initials: 'TC',
-      title: 'Senior Frontend Developer',
-      company: 'TechCorp Inc.',
-      description: 'Build modern web applications using React and TypeScript',
-      location: 'San Francisco, CA',
-      salary: '$120k - $160k',
-      type: 'Full-time',
-      timePosted: '2 days ago',
-      tags: ['Full-time', 'Senior'],
-    },
-    {
-      id: 2,
-      initials: 'IL',
-      title: 'Product Manager',
-      company: 'Innovation Labs',
-      description: 'Lead product strategy and roadmap for our flagship products',
-      location: 'New York, NY',
-      salary: '$130k - $180k',
-      type: 'Full-time',
-      timePosted: '1 week ago',
-      tags: ['Full-time', 'Mid-Level'],
-    },
-    {
-      id: 3,
-      initials: 'DS',
-      title: 'UX Designer',
-      company: 'DesignStudio',
-      description: 'Create polished product experiences for web and mobile teams',
-      location: 'Los Angeles, CA',
-      salary: '$95k - $130k',
-      type: 'Full-time',
-      timePosted: '3 days ago',
-      tags: ['Full-time', 'Mid-Level'],
-    },
-    {
-      id: 4,
-      initials: 'DC',
-      title: 'Backend Engineer',
-      company: 'DataCorp',
-      description: 'Design reliable APIs and data services for enterprise products',
-      location: 'Austin, TX',
-      salary: '$125k - $165k',
-      type: 'Full-time',
-      timePosted: '5 days ago',
-      tags: ['Full-time', 'Senior'],
-    },
-    {
-      id: 5,
-      initials: 'CS',
-      title: 'Cloud DevOps Engineer',
-      company: 'CloudSystems',
-      description: 'Own cloud infrastructure, CI/CD pipelines, and observability',
-      location: 'Remote',
-      salary: '$115k - $155k',
-      type: 'Contract',
-      timePosted: '1 day ago',
-      tags: ['Contract', 'Senior'],
-    },
-    {
-      id: 6,
-      initials: 'FS',
-      title: 'Data Analyst',
-      company: 'FinTech Solutions',
-      description: 'Turn product and customer data into clear operating insights',
-      location: 'New York, NY',
-      salary: '$80k - $115k',
-      type: 'Full-time',
-      timePosted: '4 days ago',
-      tags: ['Full-time', 'Entry Level'],
-    },
-  ];
+  readonly currentPage = signal(1);
+  readonly pageSize = signal(9); // 9 matches the 3-column layout nicely
+  readonly totalPages = signal(1);
+  readonly totalItems = signal(0);
+  readonly searchQuery = signal<string>('');
 
-  readonly filterGroups: readonly FilterGroup[] = [
+
+  private readonly searchParams$ = toObservable(
+    computed(() => {
+      const query = this.searchQuery();
+      const activeFilters: string[] = [];
+      if (query) {
+        activeFilters.push(`name ~ '${query}'`);
+      }
+      // Scan through selected filters
+      this.filterGroups().forEach(group => {
+        const checkedLabels = group.options.filter(o => o.checked);
+        if (checkedLabels.length > 0) {
+          if (group.title === 'Salary') {
+            const orConditions = checkedLabels
+              .map(o => {
+                if (o.label === 'Under 10,000,000 VND') {
+                  return 'salary <= 10000000';
+                } else if (o.label === '10,000,000 - 20,000,000 VND') {
+                  return '(salary >= 10000000 and salary <= 20000000)';
+                } else if (o.label === '20,000,000 - 50,000,000 VND') {
+                  return '(salary >= 20000000 and salary <= 50000000)';
+                } else if (o.label === 'Over 50,000,000 VND') {
+                  return 'salary > 50000000';
+                }
+                return '';
+              })
+              .filter(Boolean)
+              .join(' or ');
+
+            if (orConditions) {
+              activeFilters.push(`(${orConditions})`);
+            }
+          } else {
+            const fieldName = group.title === 'Location' ? 'location' : 'level';
+            const orConditions = checkedLabels
+              .map(o => `${fieldName} ~ '${o.label}'`)
+              .join(' or ');
+
+            activeFilters.push(`(${orConditions})`);
+          }
+        }
+      });
+      const filter = activeFilters.length > 0 ? activeFilters.join(' and ') : undefined;
+      return {
+        page: this.currentPage(),
+        size: this.pageSize(),
+        filter
+      };
+    })
+  );
+
+  private readonly searchResponse = toSignal(
+    this.searchParams$.pipe(
+      switchMap(({ page, size, filter }) =>
+        this.jobService.searchPaginated(page, size, filter).pipe(
+          tap((response: any) => {
+            const meta = response?.data?.meta;
+            if (meta) {
+              this.totalPages.set(meta.pages || 1);
+              this.totalItems.set(meta.total || 0);
+            }
+          })
+        )
+      )
+    ),
+    { initialValue: null }
+  );
+
+  readonly jobs = computed(() => {
+    const response = this.searchResponse();
+    const list = response?.data?.result || [];
+    return list.map((job: any) => ({
+      id: job.id,
+      initials: this.getInitials(job.company.name),
+      logoUrl: job.company.logo
+        ? `${API_ENDPOINTS.companies.logoBase}${job.company.logo}`
+        : undefined,
+      title: job.name,
+      company: job.company.name,
+      location: job.location,
+      salary: this.formatSalary(job.salary),
+      type: this.formatLevel(job.level),
+      timePosted: this.formatDeadline(job.endDate),
+      description: job.description,
+      skills: job.skill || job.skills || [],
+    }))
+  });
+
+  readonly filterGroups = signal<FilterGroup[]>([
     {
-      title: 'Job Type',
+      title: 'Location',
       options: [
-        { label: 'Full-time', checked: true },
-        { label: 'Part-time', checked: false },
-        { label: 'Contract', checked: false },
-        { label: 'Internship', checked: false },
+        { label: 'Ha Noi', checked: false },
+        { label: 'Ho Chi Minh City', checked: false },
+        { label: 'Da Nang', checked: false },
+        { label: 'Binh Duong', checked: false },
       ],
     },
     {
       title: 'Experience Level',
       options: [
-        { label: 'Entry Level', checked: false },
-        { label: 'Mid-Level', checked: true },
-        { label: 'Senior', checked: true },
+        { label: 'INTERN', checked: false },
+        { label: 'FRESHER', checked: false },
+        { label: 'JUNIOR', checked: false },
+        { label: 'MIDDLE', checked: false },
+        { label: 'SENIOR', checked: false },
       ],
     },
     {
-      title: 'Location',
+      title: 'Salary',
       options: [
-        { label: 'Remote', checked: false },
-        { label: 'San Francisco, CA', checked: true },
-        { label: 'New York, NY', checked: false },
-        { label: 'Austin, TX', checked: false },
+        { label: 'Under 10,000,000 VND', checked: false },
+        { label: '10,000,000 - 20,000,000 VND', checked: false },
+        { label: '20,000,000 - 50,000,000 VND', checked: false },
+        { label: 'Over 50,000,000 VND', checked: false },
       ],
     },
-    {
-      title: 'Salary Range',
-      options: [
-        { label: '$50k - $80k', checked: false },
-        { label: '$80k - $120k', checked: false },
-        { label: '$120k - $160k', checked: true },
-        { label: '$160k+', checked: false },
-      ],
-    },
-  ];
+  ]);
 
-  onSearchSubmitted(): void {}
+  private getInitials(companyName: string): string {
+    return companyName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '')
+      .join('');
+  }
 
-  onFiltersReset(): void {}
+  private formatSalary(salary: number): string {
+    return `${new Intl.NumberFormat('vi-VN').format(salary)} VND`;
+  }
+
+  private formatLevel(level: string): string {
+    return level
+      .toLowerCase()
+      .split('_')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  }
+
+  private formatDeadline(deadline: string): string {
+    const parsedDate = new Date(deadline);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return 'Open now';
+    }
+
+    return `Apply by ${new Intl.DateTimeFormat('vi-VN').format(parsedDate)}`;
+  }
+
+  onFilterChanged(event: { groupTitle: string; optionLabel: string; checked: boolean }): void {
+    this.filterGroups.update(groups =>
+      groups.map(g => g.title === event.groupTitle
+        ? {
+          ...g,
+          options: g.options.map(o => o.label === event.optionLabel ? { ...o, checked: !o.checked } : o)
+        }
+        : g
+      )
+    );
+    this.currentPage.set(1);
+  }
+
+  onSearchSubmitted(keyword: string): void {
+    this.searchQuery.set(keyword);
+    this.currentPage.set(1);
+  }
+
+  onFiltersReset(): void {
+    this.filterGroups.update(groups =>
+      groups.map(g => ({
+        ...g,
+        options: g.options.map(o => ({ ...o, checked: false }))
+      }))
+    );
+    this.currentPage.set(1);
+  }
 
   onViewDetails(job: JobCardData): void {
     void this.router.navigate(['/jobs', job.id]);
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage.set(page);
   }
 }

@@ -5,11 +5,16 @@ import { API_ENDPOINTS } from '../shared/constants/api-endpoints';
 
 export interface UserProfile {
     id: number;
+    logo?: string;
     name: string;
     email: string;
     age: number;
     gender: string;
     address: string;
+    role: {
+        id: number;
+        name: string;
+    };
 }
 
 @Injectable({
@@ -26,7 +31,17 @@ export class UserService {
         return this.http.put<{ data: UserProfile }>(API_ENDPOINTS.users.update, profile)
             .pipe(map((res) => res.data));
     }
-
-
-
+    createUser(user: any): Observable<any> {
+        return this.http.post<any>(API_ENDPOINTS.users.create, user);
+    }
+    getUsers(page = 1, size = 10, filter?: string): Observable<any> {
+        const params: any = { page, size };
+        if (filter) {
+            params.filter = filter;
+        }
+        return this.http.get<any>(API_ENDPOINTS.users.search, { params });
+    }
+    deleteUser(id: number): Observable<any> {
+        return this.http.delete<any>(API_ENDPOINTS.users.delete(id));
+    }
 }

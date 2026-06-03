@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { Location } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
@@ -11,6 +12,7 @@ import {
   LucideIconProvider,
   MapPin,
   Share2,
+  Trash2,
 } from 'lucide-angular';
 import { catchError, map, of, startWith, switchMap } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
@@ -111,6 +113,7 @@ const INITIAL_STATE: JobDetailState = {
         DollarSign,
         MapPin,
         Share2,
+        Trash2,
       }),
     },
   ],
@@ -118,7 +121,7 @@ const INITIAL_STATE: JobDetailState = {
   styleUrl: './job-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class JobDetailComponent {
+export class JobDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
@@ -126,8 +129,15 @@ export class JobDetailComponent {
   private readonly toastService = inject(ToastService);
   private readonly fileService = inject(FileService);
   private readonly resumeService = inject(ResumeService);
+  private readonly location = inject(Location);
+
+  onBack(event: Event): void {
+    event.preventDefault();
+    this.location.back();
+  }
 
   readonly isApplyModalOpen = signal(false);
+  readonly isSaved = signal<boolean>(false);
   readonly applyModalFields: readonly ModalFormField[] = [
     {
       key: 'email',
@@ -182,7 +192,61 @@ export class JobDetailComponent {
     this.isApplyModalOpen.set(true);
   }
 
-  onSave(): void { }
+  ngOnInit(): void {
+    if (!this.isLoggedIn) return;
+    this.route.paramMap.pipe(
+      map((params) => Number(params.get('id'))),
+    ).subscribe((jobId) => {
+      if (jobId && jobId > 0) {
+        this.checkIfSaved(jobId);
+      }
+    });
+  }
+
+  private checkIfSaved(jobId: number): void {
+    this.jobService.getSavedJobs().subscribe({
+      next: (savedJobs) => {
+        const saved = savedJobs.some(j => j.id === jobId);
+        this.isSaved.set(saved);
+      },
+      error: (err) => {
+        console.error('Error checking if job is saved:', err);
+      }
+    });
+  }
+
+  onSave(): void {
+    if (!this.isLoggedIn) {
+      this.toastService.error('Please log in to save jobs.');
+      return;
+    }
+    const jobId = this.detailState().job.id;
+    if (!jobId) return;
+
+    if (this.isSaved()) {
+      this.jobService.unsaveJob(jobId).subscribe({
+        next: () => {
+          this.isSaved.set(false);
+          this.toastService.success('Job unsaved successfully');
+        },
+        error: (err) => {
+          console.error('Error unsaving job:', err);
+          this.toastService.error('Failed to unsave job');
+        }
+      });
+    } else {
+      this.jobService.saveJob(jobId).subscribe({
+        next: () => {
+          this.isSaved.set(true);
+          this.toastService.success('Job saved successfully');
+        },
+        error: (err) => {
+          console.error('Error saving job:', err);
+          this.toastService.error('Failed to save job');
+        }
+      });
+    }
+  }
 
   onShare(): void { }
 
@@ -214,8 +278,8 @@ export class JobDetailComponent {
         this.isApplyModalOpen.set(false);
         this.toastService.success('Application submitted successfully.');
       },
-      error: () => {
-        this.toastService.error('Unable to submit application.');
+      error: (err) => {
+        this.toastService.error(err.error.message);
       },
     });
   }
@@ -228,6 +292,13 @@ export class JobDetailComponent {
     }
 
     void this.router.navigate(['/companies', companyId]);
+  }
+
+  get isLoggedIn(): boolean {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return !!window.localStorage.getItem('accessToken');
   }
 
   private createDetailState(job: JobApi): JobDetailState {
@@ -248,7 +319,7 @@ export class JobDetailComponent {
         location: job.location,
         salary: this.formatCurrency(job.salary),
         postedAt: `Apply by ${this.formatDate(job.endDate)}`,
-        tags: [this.formatLevel(job.level), `${job.quantity} openings`, job.active ? 'Active' : 'Closed'],
+        tags: [this.formatLevel(job.level), ...(job.skill as any[] || []).map(s => s)],
       },
       companyInfo: {
         initials: this.getInitials(job.company.name),

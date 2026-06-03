@@ -1,0 +1,46 @@
+<div class="unauthorized-page">
+  <div class="background-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="card-container">
+    <h1 class="title-text">
+      <lucide-icon name="shield-alert" class="icon-alert"></lucide-icon>
+      <span>Access Restricted</span>
+    </h1>
+    
+    <p class="description">
+      You do not have permission to access this page. Your account is not authorized to view the requested content.
+    </p>
+
+    @if (userName()) {
+      <div class="user-info">
+        <div class="info-row">
+          <span class="label">Account:</span>
+          <span class="value font-medium">{{ userName() }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Current Role:</span>
+          <span class="value badge">{{ userRole() }}</span>
+        </div>
+      </div>
+    }
+
+    <div class="action-buttons">
+      <app-button variant="primary" (buttonClick)="onGoBack()" class="btn-action">
+        <div class="button-content">
+          <lucide-icon name="arrow-left" class="btn-icon"></lucide-icon>
+          <span>Back to Dashboard</span>
+        </div>
+      </app-button>
+
+      <app-button variant="outline" (buttonClick)="onLogout()" class="btn-action">
+        <div class="button-content">
+          <lucide-icon name="log-out" class="btn-icon"></lucide-icon>
+          <span>Log out & Change Account</span>
+        </div>
+      </app-button>
+    </div>
+  </div>
+</div>

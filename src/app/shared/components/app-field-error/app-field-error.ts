@@ -8,5 +8,5 @@ import { AbstractControl } from '@angular/forms';
 })
 export class FieldErrorComponent {
   control = input.required<AbstractControl | null>();
-  fieldName = input<string>('Trường này');
+  fieldName = input<string>('This field');
 }

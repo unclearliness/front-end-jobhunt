@@ -27,7 +27,6 @@ export class JobSearchBannerComponent {
   @Input() title: string = 'Search Jobs';
   @Input() searchPlaceholder: string = 'Job title...';
   @Input() searchAriaLabel = 'Job title or keyword';
-  @Input() locationPlaceholder: string = 'Location...';
   @Input() showLocationField = true;
   @Input() submitLabel = 'Search';
   @Input() formAriaLabel = 'Search jobs';

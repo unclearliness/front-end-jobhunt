@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
-import { Observable, tap, map } from 'rxjs';
+import { Injectable, inject, signal } from '@angular/core';
+import { Observable, tap, map, of } from 'rxjs';
 import { API_ENDPOINTS } from '../shared/constants/api-endpoints';
 
 export interface LoginRequest {
@@ -32,10 +32,12 @@ export interface AccountResponse {
   id: number;
   name: string;
   email: string;
+  logo?: string;
   role: {
     id: number;
     name: string;
   };
+  company?: any;
 }
 
 const ACCESS_TOKEN_KEY = 'accessToken';
@@ -47,8 +49,14 @@ const REFRESH_TOKEN_KEY = 'refreshToken';
 export class AuthService {
   private readonly http = inject(HttpClient);
 
+  readonly userLogo = signal<string | null>(null);
+  private accountInfo: AccountResponse | null = null;
+
   login(body: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(API_ENDPOINTS.auth.login, body).pipe(
+    this.accountInfo = null; // Clear cache on new login
+    return this.http.post<LoginResponse>(API_ENDPOINTS.auth.login, body, {
+      withCredentials: true,
+    }).pipe(
       tap((response) => {
         this.setTokens(response);
       }),
@@ -63,13 +71,35 @@ export class AuthService {
     return this.http.post<any>(API_ENDPOINTS.auth.registerHr, body);
   }
 
-  getAccount(): Observable<AccountResponse> {
+  refreshToken(): Observable<LoginResponse> {
+    return this.http.get<LoginResponse>(API_ENDPOINTS.auth.refresh, {
+      withCredentials: true,
+    }).pipe(
+      tap((response) => {
+        this.setTokens(response);
+      })
+    );
+  }
+
+  getAccount(forceRefresh = false): Observable<AccountResponse> {
+    if (this.accountInfo && !forceRefresh) {
+      return of(this.accountInfo);
+    }
     return this.http.get<{ data: AccountResponse }>(API_ENDPOINTS.auth.account).pipe(
-      map((res) => res.data)
+      map((res) => res.data),
+      tap((res) => {
+        this.accountInfo = res;
+        if (res.logo) {
+          this.userLogo.set(res.logo);
+        } else {
+          this.userLogo.set(null);
+        }
+      })
     );
   }
 
   logout(): void {
+    this.accountInfo = null; // Clear cache on logout
     if (this.canUseStorage()) {
       window.localStorage.removeItem(ACCESS_TOKEN_KEY);
       window.localStorage.removeItem(REFRESH_TOKEN_KEY);

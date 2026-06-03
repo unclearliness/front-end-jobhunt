@@ -34,12 +34,14 @@ import { AppCardComponent } from '../../../shared/components/app-card/app-card.c
 import { DashboardHeaderComponent } from '../../../shared/layouts/dashboard-header/dashboard-header.component';
 import { AuthService } from '../../../services/auth.service';
 import { JobService } from '../../../services/job.service';
+import { Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map, switchMap } from 'rxjs';
 import { API_ENDPOINTS } from '../../../shared/constants/api-endpoints';
 import { UserService } from '../../../services/user.service';
 import { AppModalFormComponent, ModalFormField, ModalFormSubmitEvent } from '../../../shared/components/app-modal-form/app-modal-form.component';
 import { ToastService } from '../../../services/toast.service';
+import { FileService } from '../../../services/file.service';
 
 type DashboardFrameId =
   | 'overview'
@@ -95,10 +97,12 @@ interface JobApi {
   updatedBy?: string | null;
   company: JobCompanyApi;
   resumeStatus: string;
+  skill: any[];
 }
 
 interface UserProfile {
   id: number;
+  logo?: string;
   name: string;
   email: string;
   age: number;
@@ -136,7 +140,7 @@ interface JobCompanyApi {
 }
 @Component({
   selector: 'app-user-dashboard',
-  imports: [DashboardHeaderComponent, LucideAngularModule, AppCardComponent, AppButtonComponent, AppModalFormComponent],
+  imports: [DashboardHeaderComponent, LucideAngularModule, AppCardComponent, AppButtonComponent, AppModalFormComponent, RouterLink],
   providers: [
     {
       provide: LUCIDE_ICONS,
@@ -176,6 +180,7 @@ interface JobCompanyApi {
 })
 export class UserDashboardComponent implements OnInit {
   private readonly authService = inject(AuthService);
+  private readonly fileService = inject(FileService);
 
   readonly activeFrame = signal<DashboardFrameId>('overview');
   readonly userName = signal('John');
@@ -185,6 +190,13 @@ export class UserDashboardComponent implements OnInit {
   private readonly toastService = inject(ToastService);
 
   readonly isApplyModalOpen = signal(false);
+
+  readonly userAvatarUrl = computed(() => {
+    const profile = this.userProfile();
+    return profile?.logo
+      ? `${API_ENDPOINTS.companies.logoBase}${profile.logo}`
+      : null;
+  });
 
   readonly dashboardNavigation: readonly DashboardNavItem[] = [
     {
@@ -209,13 +221,6 @@ export class UserDashboardComponent implements OnInit {
       frameId: 'frame-dashboard-saved-jobs',
     },
     {
-      id: 'recommendations',
-      label: 'Recommendations',
-      icon: 'sparkles',
-      buttonId: 'button-dashboard-recommendations',
-      frameId: 'frame-dashboard-recommendations',
-    },
-    {
       id: 'profile',
       label: 'Profile',
       icon: 'user',
@@ -224,49 +229,21 @@ export class UserDashboardComponent implements OnInit {
     },
   ];
 
-  readonly overviewStats: readonly StatCard[] = [
-    { label: 'Applications', value: '12', helper: '+2 from last week', icon: 'briefcase-business' },
-    { label: 'Interviews', value: '3', helper: 'Upcoming this week', icon: 'calendar-check' },
-    { label: 'Saved Jobs', value: '5', helper: 'Jobs to review', icon: 'bookmark' },
-  ];
+  readonly savedJobs = signal<any[]>([]);
+
+  readonly overviewStats = computed<StatCard[]>(() => {
+    const appliedCount = this.jobs()?.length || 0;
+    const savedCount = this.savedJobs()?.length || 0;
+    return [
+      { label: 'Applications', value: String(appliedCount), helper: 'Submitted applications', icon: 'briefcase-business' },
+      { label: 'Saved Jobs', value: String(savedCount), helper: 'Jobs bookmarked', icon: 'bookmark' },
+    ];
+  });
 
   readonly recentActivities: readonly ActivityItem[] = [
     { title: 'Applied to Senior Developer', company: 'TechCorp Inc.', time: '2 days ago' },
     { title: 'Interview scheduled', company: 'DesignHub', time: '3 days ago' },
     { title: 'Saved Backend Engineer', company: 'CloudSystems', time: '5 days ago' },
-  ];
-
-  readonly savedJobs: readonly DashboardJob[] = [
-    {
-      initials: 'IL',
-      title: 'Product Manager',
-      company: 'Innovation Labs',
-      location: 'New York, NY',
-      salary: '$130k - $180k',
-      type: 'Full-time',
-      posted: '1 week ago',
-      tags: ['Product', 'Mid-Level'],
-    },
-    {
-      initials: 'CS',
-      title: 'Cloud DevOps Engineer',
-      company: 'CloudSystems',
-      location: 'Remote',
-      salary: '$115k - $155k',
-      type: 'Contract',
-      posted: '1 day ago',
-      tags: ['Cloud', 'Senior'],
-    },
-    {
-      initials: 'DS',
-      title: 'UX Researcher',
-      company: 'DesignStudio',
-      location: 'Los Angeles, CA',
-      salary: '$95k - $125k',
-      type: 'Full-time',
-      posted: '3 days ago',
-      tags: ['Research', 'Hybrid'],
-    },
   ];
 
   readonly recommendations: readonly DashboardJob[] = [
@@ -329,6 +306,7 @@ export class UserDashboardComponent implements OnInit {
             location: item.job.location,
             timePosted: this.formatDeadline(item.job.endDate),
             resumeStatus: item.resumeStatus,
+            createdAt: this.formatDate(item.job.createdAt),
           })),
       ),
     ),
@@ -337,11 +315,20 @@ export class UserDashboardComponent implements OnInit {
   readonly userProfile = signal<UserProfile | null>(null);
 
   readonly editProfileFields: readonly ModalFormField[] = [
-    { key: 'name', label: 'Họ và tên', type: 'text', required: true },
+    { key: 'name', label: 'Full Name', type: 'text', required: true },
     { key: 'email', label: 'Email', type: 'email', required: true },
-    { key: 'age', label: 'Tuổi', type: 'text', required: false },
-    { key: 'gender', label: 'Giới tính', type: 'text', required: false },
-    { key: 'address', label: 'Địa chỉ', type: 'text', required: false },
+    { key: 'age', label: 'Age', type: 'text', required: false },
+    { key: 'gender', label: 'Gender', type: 'text', required: false },
+    { key: 'address', label: 'Address', type: 'text', required: false },
+    {
+      key: 'logo',
+      label: 'Avatar',
+      type: 'file',
+      required: false,
+      accept: 'image/*',
+      maxFileSizeMb: 5,
+      uploadHandler: (file: File) => this.fileService.upload(file),
+    },
   ];
 
   readonly profileInitialValues = computed(() => {
@@ -352,7 +339,8 @@ export class UserDashboardComponent implements OnInit {
       email: profile.email,
       age: profile.age,
       gender: profile.gender,
-      address: profile.address
+      address: profile.address,
+      logo: profile.logo || '',
     };
   });
 
@@ -360,10 +348,65 @@ export class UserDashboardComponent implements OnInit {
 
 
 
+  loadSavedJobs(): void {
+    this.jobService.getSavedJobs().subscribe({
+      next: (jobs) => {
+        this.savedJobs.set(jobs.map(job => this.mapJobToDashboardJob(job)));
+      },
+      error: (err) => {
+        console.error('Error loading saved jobs:', err);
+      }
+    });
+  }
+
+  onRemoveSavedJob(jobId: number): void {
+    this.jobService.unsaveJob(jobId).subscribe({
+      next: () => {
+        this.toastService.success('Job unsaved successfully');
+        this.savedJobs.update(jobs => jobs.filter(j => j.id !== jobId));
+      },
+      error: (err) => {
+        console.error('Error unsaving job:', err);
+        this.toastService.error('Failed to unsave job');
+      }
+    });
+  }
+
+  private mapJobToDashboardJob(job: JobApi) {
+    const initials = job.company?.name
+      ? job.company.name.split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]?.toUpperCase()).join('')
+      : '--';
+    return {
+      id: job.id,
+      initials,
+      title: job.name,
+      company: job.company?.name || 'Unknown Company',
+      location: job.location,
+      salary: `${new Intl.NumberFormat('vi-VN').format(job.salary)} VND`,
+      type: this.formatLevel(job.level),
+      posted: `Apply by ${this.formatDate(job.endDate)}`,
+      tags: (job.skill as any[] || []).map(s => String(s)),
+      logoUrl: job.company?.logo
+        ? `${API_ENDPOINTS.companies.logoBase}${job.company.logo}`
+        : undefined,
+    };
+  }
+
+  private formatLevel(level: string): string {
+    if (!level) return '';
+    return level
+      .toLowerCase()
+      .split(/[_\s]+/)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  }
+
   ngOnInit(): void {
     if (typeof window === 'undefined' || !window.localStorage.getItem('accessToken')) {
       return;
     }
+
+    this.loadSavedJobs();
 
     this.authService.getAccount().pipe(
       switchMap((account) => {
@@ -373,9 +416,10 @@ export class UserDashboardComponent implements OnInit {
     ).subscribe({
       next: (profile) => {
         this.userProfile.set(profile);
+        this.authService.userLogo.set(profile.logo || null);
       },
       error: (err) => {
-        console.error('Lỗi khi tải thông tin tài khoản hoặc profile:', err);
+        console.error('Error loading account or profile details:', err);
       },
     });
   }
@@ -396,6 +440,15 @@ export class UserDashboardComponent implements OnInit {
     }
 
     return `Apply by ${new Intl.DateTimeFormat('vi-VN').format(parsedDate)}`;
+  }
+
+  private formatDate(dateStr: string): string {
+    const parsedDate = new Date(dateStr);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return '--';
+    }
+
+    return new Intl.DateTimeFormat('vi-VN').format(parsedDate);
   }
 
 
@@ -419,6 +472,7 @@ export class UserDashboardComponent implements OnInit {
       age: Number(event.values['age']),
       gender: event.values['gender'] as string,
       address: event.values['address'] as string,
+      logo: (event.uploadedFiles['logo'] as string) || this.userProfile()?.logo,
     };
 
     // Gọi API cập nhật
@@ -427,12 +481,13 @@ export class UserDashboardComponent implements OnInit {
         // Cập nhật lại thông tin mới vào signal để giao diện tự render lại
         this.userProfile.set(updatedProfile);
         this.userName.set(updatedProfile.name);
+        this.authService.userLogo.set(updatedProfile.logo || null);
         // Đóng modal
         this.isApplyModalOpen.set(false);
         this.toastService.success('Profile updated successfully');
       },
       error: (err) => {
-        console.error('Lỗi khi cập nhật profile:', err);
+        console.error('Error updating profile:', err);
       }
     });
   }

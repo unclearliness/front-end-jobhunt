@@ -3,9 +3,9 @@
 
   <section class="job-detail" aria-labelledby="job-detail-title">
     <div class="job-detail__container">
-      <a class="back-link" routerLink="/find-jobs">
+      <a class="back-link" (click)="onBack($event)" style="cursor: pointer;">
         <i-lucide class="back-link__icon" name="arrow-left" aria-hidden="true" />
-        <span>Back to Jobs</span>
+        <span>Back</span>
       </a>
 
       <div class="job-detail__layout">
@@ -89,20 +89,14 @@
         <aside class="job-detail__sidebar" aria-label="Job actions and company details">
           @if (!detailState().isLoading && !detailState().errorMessage) {
           <app-card class="action-card" ariaLabel="Apply for job">
-            <app-button variant="primary" [fullWidth]="true" (buttonClick)="onApply()">
+            <app-button variant="primary" [fullWidth]="true" (buttonClick)="onApply()" [disabled]="!isLoggedIn">
               Apply Now
             </app-button>
 
-            <div class="action-card__secondary-actions">
-              <app-button [fullWidth]="true" (buttonClick)="onSave()">
-                <i-lucide class="button-icon" name="bookmark" aria-hidden="true" />
-                <span>Save</span>
-              </app-button>
-              <app-button [fullWidth]="true" (buttonClick)="onShare()">
-                <i-lucide class="button-icon" name="share-2" aria-hidden="true" />
-                <span>Share</span>
-              </app-button>
-            </div>
+            <app-button [class.is-saved]="isSaved()" variant="outline" [fullWidth]="true" (buttonClick)="onSave()" [disabled]="!isLoggedIn">
+              <i-lucide class="button-icon" [class.is-saved]="isSaved()" name="bookmark" aria-hidden="true" />
+              <span>{{ isSaved() ? 'Saved' : 'Save' }}</span>
+            </app-button>
           </app-card>
 
           <app-card cardTitle="About the Company" titleId="company-profile-title">

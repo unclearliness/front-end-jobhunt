@@ -44,8 +44,44 @@ export class ExploreCompaniesComponent {
   private readonly searchParams$ = toObservable(
     computed(() => {
       const query = this.searchQuery();
-      // Định dạng filter: name ~ 'query'
-      const filter = query ? `name ~ '${query}'` : undefined;
+      // Filter format: name ~ 'query'
+      const activeFilters: string[] = [];
+      if (query) {
+        activeFilters.push(`name ~ '${query}'`);
+      }
+      // Scan through selected filters
+      this.filterGroups().forEach(group => {
+        const checkedLabels = group.options.filter(o => o.checked);
+        if (checkedLabels.length > 0) {
+          if (group.title === 'Company Size') {
+            const orConditions = checkedLabels
+              .map(o => {
+                if (o.label === '1-50 employees') {
+                  return 'companySize <= 50';
+                } else if (o.label === '51-500 employees') {
+                  return '(companySize >= 51 and companySize <= 500)';
+                } else if (o.label === '500+ employees') {
+                  return 'companySize > 500';
+                }
+                return '';
+              })
+              .filter(Boolean)
+              .join(' or ');
+
+            if (orConditions) {
+              activeFilters.push(`(${orConditions})`);
+            }
+          } else {
+            const fieldName = group.title === 'Location' ? 'address' : group.title.toLowerCase();
+            const orConditions = checkedLabels
+              .map(o => `${fieldName} ~ '${o.label}'`)
+              .join(' or ');
+
+            activeFilters.push(`(${orConditions})`);
+          }
+        }
+      });
+      const filter = activeFilters.length > 0 ? activeFilters.join(' and ') : undefined;
       return {
         page: this.currentPage(),
         size: this.pageSize(),
@@ -86,11 +122,11 @@ export class ExploreCompaniesComponent {
     })) as ExploreCompany[];
   });
 
-  readonly filterGroups: readonly FilterGroup[] = [
+  readonly filterGroups = signal<FilterGroup[]>([
     {
       title: 'Location',
       options: [
-        { label: 'Ha Noi', checked: true },
+        { label: 'Ha Noi', checked: false },
         { label: 'Ho Chi Minh City', checked: false },
         { label: 'Da Nang', checked: false },
         { label: 'Binh Duong', checked: false },
@@ -99,7 +135,7 @@ export class ExploreCompaniesComponent {
     {
       title: 'Industry',
       options: [
-        { label: 'Software Development', checked: true },
+        { label: 'Software Development', checked: false },
         { label: 'Cloud Infrastructure', checked: false },
         { label: 'Fintech', checked: false },
         { label: 'HealthTech', checked: false },
@@ -111,10 +147,23 @@ export class ExploreCompaniesComponent {
       options: [
         { label: '1-50 employees', checked: false },
         { label: '51-500 employees', checked: false },
-        { label: '500+ employees', checked: true },
+        { label: '500+ employees', checked: false },
       ],
     },
-  ];
+  ]);
+
+  onFilterChanged(event: { groupTitle: string; optionLabel: string; checked: boolean }): void {
+    this.filterGroups.update(groups =>
+      groups.map(g => g.title === event.groupTitle
+        ? {
+          ...g,
+          options: g.options.map(o => o.label === event.optionLabel ? { ...o, checked: !o.checked } : o)
+        }
+        : g
+      )
+    );
+    this.currentPage.set(1); // Reset to page 1
+  }
 
   onSearchSubmitted(keyword: string): void {
     this.searchQuery.set(keyword);

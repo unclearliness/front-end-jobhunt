@@ -24,7 +24,7 @@ export class FeaturedJobsDashboardComponent {
   private readonly jobService = inject(JobService);
 
   readonly jobs = toSignal(
-    this.jobService.search(1, 4).pipe(
+    this.jobService.search(1, 4, 'endDate,asc').pipe(
       map((jobs: JobApi[]) =>
         jobs.filter((job) => job.active).map((job) => ({
           id: job.id,
@@ -39,6 +39,7 @@ export class FeaturedJobsDashboardComponent {
           type: this.formatLevel(job.level),
           timePosted: this.formatDeadline(job.endDate),
           description: job.description,
+          skills: job.skill || [],
         })),
       ),
     ),

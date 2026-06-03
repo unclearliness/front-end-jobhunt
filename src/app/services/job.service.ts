@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { map, Observable, Unsubscribable } from 'rxjs';
 import { API_ENDPOINTS } from '../shared/constants/api-endpoints';
 
 interface JobCompanyApi {
@@ -40,12 +40,28 @@ export interface JobApi {
 export class JobService {
   private readonly http = inject(HttpClient);
 
-  search(page = 1, size = 4): Observable<JobApi[]> {
+  create(body: any): Observable<any> {
+    return this.http.post<any>(API_ENDPOINTS.jobs.create, body);
+  }
+
+  search(page = 1, size = 4, sort?: string): Observable<JobApi[]> {
+
+
     return this.http
       .get<any>(API_ENDPOINTS.jobs.search, {
-        params: { page, size },
+        params: { page, size, ...(sort ? { sort } : {}) },
       })
       .pipe(map((res) => (res?.data?.result ?? res?.data ?? []) as JobApi[]));
+  }
+
+  searchPaginated(page = 1, size = 4, filter?: string): Observable<any> {
+    const params: any = { page, size };
+    if (filter) {
+      params.filter = filter;
+    }
+    return this.http.get<any>(API_ENDPOINTS.jobs.search, {
+      params,
+    });
   }
 
   getById(id: number): Observable<JobApi> {
@@ -57,5 +73,33 @@ export class JobService {
     return this.http.get<any>(API_ENDPOINTS.jobs.byResume).pipe(
       map(res => res?.data || [])
     );
+  }
+
+  getByHr(page = 1, size = 10): Observable<any> {
+    return this.http.get<any>(API_ENDPOINTS.jobs.byHr, {
+      params: { page, size },
+    });
+  }
+
+  update(body: any): Observable<any> {
+    return this.http.put<any>(API_ENDPOINTS.jobs.update, body);
+  }
+
+  delete(id: number): Observable<any> {
+    return this.http.delete<any>(API_ENDPOINTS.jobs.delete(id));
+  }
+
+  saveJob(jobId: number): Observable<void> {
+    return this.http.post<void>(`${API_ENDPOINTS.jobs.search}/${jobId}/save`, {});
+  }
+
+  unsaveJob(jobId: number): Observable<void> {
+    return this.http.delete<void>(`${API_ENDPOINTS.jobs.search}/${jobId}/save`);
+  }
+
+  getSavedJobs(): Observable<JobApi[]> {
+    return this.http
+      .get<any>(`${API_ENDPOINTS.jobs.search}/saved`)
+      .pipe(map((res) => (res?.data ?? res) as JobApi[]));
   }
 }

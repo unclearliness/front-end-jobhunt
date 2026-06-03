@@ -12,15 +12,6 @@
           [placeholder]="searchPlaceholder" />
       </label>
 
-      @if (showLocationField) {
-      <label class="job-search-field job-search-field--location">
-        <span class="job-search-field__icon" aria-hidden="true">
-          <i-lucide name="map-pin" />
-        </span>
-        <input class="job-search-field__input" type="text" aria-label="Location" [placeholder]="locationPlaceholder" />
-      </label>
-      }
-
       <app-button class="job-search-form__submit" variant="primary" type="submit" [fullWidth]="true">
         {{ submitLabel }}
       </app-button>

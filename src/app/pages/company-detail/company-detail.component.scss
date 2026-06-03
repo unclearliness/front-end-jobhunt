@@ -19,7 +19,7 @@
 .back-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   margin-bottom: 24px;
   color: var(--foreground);
   font-size: 14px;
@@ -36,6 +36,15 @@
 .back-link__icon {
   width: 16px;
   height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  ::ng-deep svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
 }
 
 .company-detail__layout {

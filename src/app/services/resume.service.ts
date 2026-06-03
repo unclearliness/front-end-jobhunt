@@ -9,6 +9,10 @@ export interface CreateResumeRequest {
   userId: number;
   jobId: number;
 }
+export interface UpdateResumeRequest {
+  id: number;
+  status: string,
+}
 
 @Injectable({
   providedIn: 'root',
@@ -19,4 +23,16 @@ export class ResumeService {
   create(body: CreateResumeRequest): Observable<unknown> {
     return this.http.post(API_ENDPOINTS.resumes.create, body);
   }
+  update(body: UpdateResumeRequest): Observable<unknown> {
+    return this.http.put(API_ENDPOINTS.resumes.update, body);
+  }
+  getByHr(page: number = 0, size: number = 10): Observable<any> {
+    return this.http.get<any>(API_ENDPOINTS.resumes.byHr, {
+      params: {
+        page: page.toString(),
+        size: size.toString()
+      }
+    });
+  }
+
 }

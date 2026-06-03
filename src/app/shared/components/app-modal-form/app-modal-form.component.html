@@ -1,118 +1,105 @@
 @if (open) {
-  <div class="app-modal-form__backdrop" (click)="onBackdropClick()">
-    <div
-      class="app-modal-form"
-      role="dialog"
-      aria-modal="true"
-      [attr.aria-labelledby]="'modal-form-title'"
-      (click)="$event.stopPropagation()"
-    >
-      <header class="app-modal-form__header">
-        <div class="app-modal-form__header-copy">
-          <h2 class="app-modal-form__title" id="modal-form-title">{{ title }}</h2>
-          @if (subtitle) {
-            <p class="app-modal-form__subtitle">{{ subtitle }}</p>
+<div class="app-modal-form__backdrop" (click)="onBackdropClick()">
+  <div class="app-modal-form" role="dialog" aria-modal="true" [attr.aria-labelledby]="'modal-form-title'"
+    (click)="$event.stopPropagation()">
+    <header class="app-modal-form__header">
+      <div class="app-modal-form__header-copy">
+        <h2 class="app-modal-form__title" id="modal-form-title">{{ title }}</h2>
+        @if (subtitle) {
+        <p class="app-modal-form__subtitle">{{ subtitle }}</p>
+        }
+      </div>
+
+      <button class="app-modal-form__close" type="button" aria-label="Close modal" (click)="onClose()">
+        <i-lucide class="app-modal-form__close-icon" name="x" aria-hidden="true" />
+      </button>
+    </header>
+
+    <form class="app-modal-form__body" [formGroup]="form" (ngSubmit)="onSubmit()">
+      @for (field of fields; track field.key) {
+      <div class="app-modal-form__field">
+        <label class="app-modal-form__label" [for]="'modal-field-' + field.key">
+          <span>{{ field.label }}</span>
+          @if (field.required) {
+          <span class="app-modal-form__required">*</span>
           }
-        </div>
+        </label>
 
-        <button
-          class="app-modal-form__close"
-          type="button"
-          aria-label="Close modal"
-          (click)="onClose()"
-        >
-          <i-lucide class="app-modal-form__close-icon" name="x" aria-hidden="true" />
-        </button>
-      </header>
-
-      <form class="app-modal-form__body" [formGroup]="form" (ngSubmit)="onSubmit()">
-        @for (field of fields; track field.key) {
-          <div class="app-modal-form__field">
-            <label class="app-modal-form__label" [for]="'modal-field-' + field.key">
-              <span>{{ field.label }}</span>
-              @if (field.required) {
-                <span class="app-modal-form__required">*</span>
-              }
-            </label>
-
-            @switch (field.type ?? 'text') {
-              @case ('textarea') {
-                <textarea
-                  class="app-modal-form__input app-modal-form__input--textarea"
-                  [id]="'modal-field-' + field.key"
-                  [formControlName]="field.key"
-                  [placeholder]="field.placeholder ?? ''"
-                  [rows]="getTextAreaRows(field)"
-                ></textarea>
-              }
-
-              @case ('file') {
-                <div
-                  class="app-modal-form__dropzone"
-                  [class.app-modal-form__dropzone--dragging]="dragOverFieldKey() === field.key"
-                  (dragover)="onFileDragOver($event, field.key)"
-                  (dragleave)="onFileDragLeave($event)"
-                  (drop)="onFileDrop($event, field)"
-                >
-                  <i-lucide class="app-modal-form__upload-icon" name="upload" aria-hidden="true" />
-                  <p class="app-modal-form__dropzone-title">Click to upload or drag and drop</p>
-                  @if (field.hint) {
-                    <p class="app-modal-form__dropzone-hint">{{ field.hint }}</p>
-                  }
-
-                  <label class="app-modal-form__file-button" [for]="'modal-field-' + field.key">
-                    Choose File
-                  </label>
-
-                  <input
-                    class="app-modal-form__file-input"
-                    [id]="'modal-field-' + field.key"
-                    type="file"
-                    [accept]="field.accept ?? ''"
-                    (change)="onFileSelected($event, field)"
-                  />
-
-                  @if (getFileName(field.key); as fileName) {
-                    <p class="app-modal-form__file-name">{{ fileName }}</p>
-                  }
-
-                  @if (field.uploadHandler && isUploading(field.key)) {
-                    <p class="app-modal-form__uploading-status">Uploading file...</p>
-                  }
-
-                </div>
-              }
-
-              @default {
-                <input
-                  class="app-modal-form__input"
-                  [id]="'modal-field-' + field.key"
-                  [type]="field.type ?? 'text'"
-                  [formControlName]="field.key"
-                  [placeholder]="field.placeholder ?? ''"
-                />
-              }
-            }
-
-            @if (field.type !== 'file' && field.hint) {
-              <p class="app-modal-form__hint">{{ field.hint }}</p>
-            }
-
-            @if (getFieldErrorMessage(field); as errorMessage) {
-              <span class="app-modal-form__error">{{ errorMessage }}</span>
-            }
-          </div>
+        @switch (field.type ?? 'text') {
+        @case ('textarea') {
+        <textarea class="app-modal-form__input app-modal-form__input--textarea" [id]="'modal-field-' + field.key"
+          [formControlName]="field.key" [placeholder]="field.placeholder ?? ''"
+          [rows]="getTextAreaRows(field)"></textarea>
         }
 
-        <footer class="app-modal-form__actions">
-          <app-button [type]="'button'" (buttonClick)="onClose()">
-            {{ cancelLabel }}
-          </app-button>
-          <app-button [type]="'submit'" variant="primary">
-            {{ submitLabel }}
-          </app-button>
-        </footer>
-      </form>
-    </div>
+        @case ('file') {
+        <div class="app-modal-form__dropzone"
+          [class.app-modal-form__dropzone--dragging]="dragOverFieldKey() === field.key"
+          [class.app-modal-form__dropzone--disabled]="field.disabled"
+          (dragover)="onFileDragOver($event, field.key)" (dragleave)="onFileDragLeave($event)"
+          (drop)="onFileDrop($event, field)">
+          <i-lucide class="app-modal-form__upload-icon" name="upload" aria-hidden="true" />
+          <p class="app-modal-form__dropzone-title">Click to upload or drag and drop</p>
+          @if (field.hint) {
+          <p class="app-modal-form__dropzone-hint">{{ field.hint }}</p>
+          }
+
+          <label class="app-modal-form__file-button" [for]="field.disabled ? null : 'modal-field-' + field.key">
+            Choose File
+          </label>
+
+          <input class="app-modal-form__file-input" [id]="'modal-field-' + field.key" type="file"
+            [accept]="field.accept ?? ''" [disabled]="field.disabled" (change)="onFileSelected($event, field)" />
+
+          @if (getFileName(field.key); as fileName) {
+          <p class="app-modal-form__file-name">{{ fileName }}</p>
+          }
+
+          @if (field.uploadHandler && isUploading(field.key)) {
+          <p class="app-modal-form__uploading-status">Uploading file...</p>
+          }
+
+        </div>
+        }
+
+        @case ('select') {
+        <select class="app-modal-form__input app-modal-form__input--select" [id]="'modal-field-' + field.key"
+          [formControlName]="field.key">
+          <option value="" disabled selected>{{ field.placeholder ?? 'Select option' }}</option>
+          @for (opt of field.options; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+        }
+
+        @default {
+        <input class="app-modal-form__input" [id]="'modal-field-' + field.key" [type]="field.type ?? 'text'"
+          [formControlName]="field.key" [placeholder]="field.placeholder ?? ''" />
+        }
+        }
+
+        @if (field.type !== 'file' && field.hint) {
+        <p class="app-modal-form__hint">{{ field.hint }}</p>
+        }
+
+        @if (getFieldErrorMessage(field); as errorMessage) {
+        <span class="app-modal-form__error">{{ errorMessage }}</span>
+        }
+      </div>
+      }
+
+      <footer class="app-modal-form__actions">
+        <app-button [type]="'button'" (buttonClick)="onClose()">
+          {{ cancelLabel }}
+        </app-button>
+
+        @if (!hideSubmit) {
+        <app-button [type]="'submit'" variant="primary">
+          {{ submitLabel }}
+        </app-button>
+        }
+      </footer>
+    </form>
   </div>
+</div>
 }

@@ -5,352 +5,650 @@
     <aside class="hr-dashboard-sidebar" aria-label="HR dashboard navigation">
       <nav class="hr-dashboard-nav">
         @for (item of dashboardNavigation; track item.id) {
-          <button
-            class="hr-dashboard-nav__button hr-dashboard-nav__button--{{ item.id }}"
-            [class.is-active]="isActive(item.id)"
-            [id]="item.buttonId"
-            type="button"
-            [attr.aria-controls]="item.frameId"
-            [attr.aria-current]="isActive(item.id) ? 'page' : null"
-            [attr.data-prototype-target]="item.frameId"
-            data-prototype-action="On Click -> Navigate To -> Slide In"
-            (click)="selectFrame(item.id)"
-          >
-            <i-lucide class="hr-dashboard-nav__icon" [name]="item.icon" aria-hidden="true" />
-            <span>{{ item.label }}</span>
-          </button>
+        <button class="hr-dashboard-nav__button hr-dashboard-nav__button--{{ item.id }}"
+          [class.is-active]="isActive(item.id)" [id]="item.buttonId" type="button" [attr.aria-controls]="item.frameId"
+          [attr.aria-current]="isActive(item.id) ? 'page' : null" [attr.data-prototype-target]="item.frameId"
+          data-prototype-action="On Click -> Navigate To -> Slide In" (click)="selectFrame(item.id)"
+          [disabled]="!company() && item.id !== 'company-profile'">
+          <i-lucide class="hr-dashboard-nav__icon" [name]="item.icon" aria-hidden="true" />
+          <span>{{ item.label }}</span>
+        </button>
         }
       </nav>
     </aside>
 
     <div class="hr-dashboard-content">
       @switch (activeFrame()) {
-        @case ('overview') {
-          <section
-            class="dashboard-frame dashboard-frame--overview"
-            id="frame-hr-overview"
-            aria-labelledby="frame-hr-overview-title"
-          >
-            <header class="frame-header">
-              <h1 id="frame-hr-overview-title">Employer Dashboard</h1>
-              <p>Manage your job postings and candidates</p>
-            </header>
+      @case ('overview') {
+      <section class="dashboard-frame dashboard-frame--overview" id="frame-hr-overview"
+        aria-labelledby="frame-hr-overview-title">
+        <header class="frame-header">
+          <h1 id="frame-hr-overview-title">Employer Dashboard</h1>
+          <p>Manage your job postings and candidates</p>
+        </header>
 
-            <div class="stats-grid">
-              @for (stat of overviewStats; track stat.label) {
-                <article class="stat-card">
-                  <div class="stat-card__header">
-                    <h2>{{ stat.label }}</h2>
-                    <i-lucide [name]="stat.icon" aria-hidden="true" />
-                  </div>
-                  <strong>{{ stat.value }}</strong>
-                  <span>{{ stat.helper }}</span>
-                </article>
-              }
+        <div class="stats-grid">
+          @for (stat of overviewStats(); track stat.label) {
+          <article class="stat-card">
+            <div class="stat-card__header">
+              <h2>{{ stat.label }}</h2>
+              <i-lucide [name]="stat.icon" aria-hidden="true" />
             </div>
+            <strong>{{ stat.value }}</strong>
+            <span>{{ stat.helper }}</span>
+          </article>
+          }
+        </div>
 
-            <div class="overview-grid">
-              <app-card cardTitle="Quick Actions" titleId="hr-overview-actions-title">
-                <div class="quick-actions">
-                  <button
-                    class="quick-action"
-                    id="button-hr-quick-post-job"
-                    type="button"
-                    aria-controls="frame-hr-post-job"
-                    (click)="selectFrame('post-job')"
-                  >
-                    <span>
-                      <strong>Post New Job</strong>
-                      <small>Create a new job posting</small>
-                    </span>
-                    <i-lucide name="chevron-right" aria-hidden="true" />
-                  </button>
+        <div class="overview-grid">
+          <app-card cardTitle="Quick Actions" titleId="hr-overview-actions-title">
+            <div class="quick-actions">
+              <button class="quick-action" id="button-hr-quick-post-job" type="button" aria-controls="frame-hr-post-job"
+                (click)="selectFrame('post-job')">
+                <span>
+                  <strong>Post New Job</strong>
+                  <small>Create a new job posting</small>
+                </span>
+                <i-lucide name="chevron-right" aria-hidden="true" />
+              </button>
 
-                  <button
-                    class="quick-action"
-                    id="button-hr-quick-manage-jobs"
-                    type="button"
-                    aria-controls="frame-hr-my-jobs"
-                    (click)="selectFrame('my-jobs')"
-                  >
-                    <span>
-                      <strong>Manage Jobs</strong>
-                      <small>View and edit your job postings</small>
-                    </span>
-                    <i-lucide name="chevron-right" aria-hidden="true" />
-                  </button>
+              <button class="quick-action" id="button-hr-quick-manage-jobs" type="button"
+                aria-controls="frame-hr-my-jobs" (click)="selectFrame('my-jobs')">
+                <span>
+                  <strong>Manage Jobs</strong>
+                  <small>View and edit your job postings</small>
+                </span>
+                <i-lucide name="chevron-right" aria-hidden="true" />
+              </button>
 
-                  <button
-                    class="quick-action"
-                    id="button-hr-quick-review-applicants"
-                    type="button"
-                    aria-controls="frame-hr-applicants"
-                    (click)="selectFrame('applicants')"
-                  >
-                    <span>
-                      <strong>Review Applicants</strong>
-                      <small>See who applied to your jobs</small>
-                    </span>
-                    <i-lucide name="chevron-right" aria-hidden="true" />
-                  </button>
-                </div>
-              </app-card>
-
-              <app-card cardTitle="Recent Applications" titleId="hr-overview-applications-title">
-                <div class="activity-list">
-                  @for (application of recentApplications; track application.name) {
-                    <article class="activity-item">
-                      <span>
-                        <strong>{{ application.name }}</strong>
-                        <small>{{ application.role }}</small>
-                      </span>
-                      <time>{{ application.time }}</time>
-                    </article>
-                  }
-                </div>
-              </app-card>
+              <button class="quick-action" id="button-hr-quick-review-applicants" type="button"
+                aria-controls="frame-hr-applicants" (click)="selectFrame('applicants')">
+                <span>
+                  <strong>Review Applicants</strong>
+                  <small>See who applied to your jobs</small>
+                </span>
+                <i-lucide name="chevron-right" aria-hidden="true" />
+              </button>
             </div>
-          </section>
-        }
+          </app-card>
+        </div>
+      </section>
+      }
 
-        @case ('post-job') {
-          <section
-            class="dashboard-frame dashboard-frame--post-job"
-            id="frame-hr-post-job"
-            aria-labelledby="frame-hr-post-job-title"
-          >
-            <header class="frame-header frame-header--with-action">
-              <div>
-                <h1 id="frame-hr-post-job-title">Post Job</h1>
-                <p>Create a job posting that is clear, scannable, and ready for candidates</p>
-              </div>
-              <app-button variant="outline" size="compact">Save Draft</app-button>
-            </header>
+      @case ('post-job') {
+      <section class="dashboard-frame dashboard-frame--post-job" id="frame-hr-post-job"
+        aria-labelledby="frame-hr-post-job-title">
+        <header class="frame-header frame-header--with-action">
+          <div>
+            <h1 id="frame-hr-post-job-title">Post Job</h1>
+            <p>Create a job posting that is clear, scannable, and ready for candidates</p>
+          </div>
+          <app-button variant="outline" size="compact" type="button" (click)="jobPostForm.reset({ level: 'INTERN' })">
+            Clear Form
+          </app-button>
+        </header>
 
-            <form class="job-form" aria-label="Create job posting">
-              <app-card cardTitle="Job Details" titleId="hr-job-details-title">
-                <div class="form-grid">
-                  <label class="field field--wide">
-                    <span>Job title</span>
-                    <input type="text" value="Senior Frontend Developer" />
-                  </label>
-                  <label class="field">
-                    <span>Employment type</span>
-                    <select>
-                      <option>Full-time</option>
-                      <option>Part-time</option>
-                      <option>Contract</option>
-                    </select>
-                  </label>
-                  <label class="field">
-                    <span>Workplace</span>
-                    <select>
-                      <option>Hybrid</option>
-                      <option>Remote</option>
-                      <option>On-site</option>
-                    </select>
-                  </label>
-                  <label class="field">
-                    <span>Location</span>
-                    <input type="text" value="San Francisco, CA" />
-                  </label>
-                  <label class="field">
-                    <span>Salary range</span>
-                    <input type="text" value="$120k - $160k" />
-                  </label>
-                  <label class="field field--wide">
-                    <span>Job description</span>
-                    <textarea rows="5">Build polished product experiences with Angular, TypeScript, and reusable UI patterns.</textarea>
-                  </label>
-                  <label class="field field--wide">
-                    <span>Requirements</span>
-                    <textarea rows="4">5+ years frontend experience, strong component architecture, accessibility mindset, and API collaboration.</textarea>
-                  </label>
-                </div>
-              </app-card>
+        <!-- Bọc formGroup và ngSubmit -->
+        <form [formGroup]="jobPostForm" (ngSubmit)="onSubmitJob()" class="job-form" aria-label="Create job posting">
+          <app-card cardTitle="Job Details" titleId="hr-job-details-title">
+            <div class="form-grid">
 
-              <footer class="form-actions">
-                <app-button variant="outline" size="compact" type="button">Preview</app-button>
-                <app-button variant="primary" size="compact" type="submit">
-                  <i-lucide name="send" aria-hidden="true" />
-                  Publish Job
-                </app-button>
-              </footer>
-            </form>
-          </section>
-        }
-
-        @case ('my-jobs') {
-          <section
-            class="dashboard-frame dashboard-frame--my-jobs"
-            id="frame-hr-my-jobs"
-            aria-labelledby="frame-hr-my-jobs-title"
-          >
-            <header class="frame-header frame-header--with-action">
-              <div>
-                <h1 id="frame-hr-my-jobs-title">My Jobs</h1>
-                <p>Manage active, reviewing, and draft postings from one place</p>
-              </div>
-              <app-button variant="primary" size="compact" (buttonClick)="selectFrame('post-job')">
-                <i-lucide name="circle-plus" aria-hidden="true" />
-                New Job
-              </app-button>
-            </header>
-
-            <div class="frame-toolbar">
-              <label class="search-control">
-                <i-lucide name="search" aria-hidden="true" />
-                <input type="search" placeholder="Search job postings" aria-label="Search job postings" />
+              <!-- Job title -->
+              <label class="field field--wide">
+                <span>Job title *</span>
+                <input type="text" formControlName="name" placeholder="e.g. Backend Java Intern" />
+                <app-field-error [control]="jobPostForm.get('name')" fieldName="Job Title"></app-field-error>
               </label>
-              <select class="select-control" aria-label="Filter job postings">
-                <option>All Jobs</option>
-                <option>Active</option>
-                <option>Reviewing</option>
-                <option>Draft</option>
-              </select>
-            </div>
 
-            <div class="posting-list">
-              @for (job of jobPostings; track job.title) {
-                <article class="posting-row">
-                  <div class="posting-row__main">
-                    <h2>{{ job.title }}</h2>
-                    <p>{{ job.location }} · {{ job.type }} · Posted {{ job.posted }}</p>
-                  </div>
-                  <div class="posting-metrics">
-                    <span><i-lucide name="users" aria-hidden="true" />{{ job.applicants }} applicants</span>
-                    <span><i-lucide name="eye" aria-hidden="true" />{{ job.views }} views</span>
-                  </div>
-                  <span class="status-badge {{ job.statusClass }}">{{ job.status }}</span>
-                  <div class="row-actions">
-                    <button class="icon-button" type="button" aria-label="View job posting">
-                      <i-lucide name="eye" aria-hidden="true" />
-                    </button>
-                    <button class="icon-button" type="button" aria-label="Edit job posting">
-                      <i-lucide name="edit" aria-hidden="true" />
-                    </button>
-                  </div>
-                </article>
-              }
-            </div>
-          </section>
-        }
-
-        @case ('applicants') {
-          <section
-            class="dashboard-frame dashboard-frame--applicants"
-            id="frame-hr-applicants"
-            aria-labelledby="frame-hr-applicants-title"
-          >
-            <header class="frame-header">
-              <h1 id="frame-hr-applicants-title">Applicants</h1>
-              <p>Review candidates, track stage, and move the right people forward</p>
-            </header>
-
-            <div class="frame-toolbar">
-              <label class="search-control">
-                <i-lucide name="search" aria-hidden="true" />
-                <input type="search" placeholder="Search applicants" aria-label="Search applicants" />
+              <!-- Level dropdown -->
+              <label class="field">
+                <span>Level *</span>
+                <select formControlName="level" class="select-control">
+                  <option value="INTERN">INTERN</option>
+                  <option value="FRESHER">FRESHER</option>
+                  <option value="JUNIOR">JUNIOR</option>
+                  <option value="MIDDLE">MIDDLE</option>
+                  <option value="SENIOR">SENIOR</option>
+                </select>
+                <app-field-error [control]="jobPostForm.get('level')" fieldName="Level"></app-field-error>
               </label>
-              <select class="select-control" aria-label="Filter applicants">
-                <option>All Stages</option>
-                <option>New</option>
-                <option>Under Review</option>
-                <option>Interview</option>
-              </select>
-            </div>
 
-            <div class="applicant-list">
-              @for (applicant of applicants; track applicant.name) {
-                <article class="applicant-row">
-                  <div class="avatar" aria-hidden="true">{{ applicant.name.slice(0, 1) }}</div>
-                  <div class="applicant-row__main">
-                    <h2>{{ applicant.name }}</h2>
-                    <p>{{ applicant.role }} · {{ applicant.location }}</p>
-                    <small>Applied {{ applicant.applied }}</small>
-                  </div>
-                  <span class="status-badge {{ applicant.stageClass }}">{{ applicant.stage }}</span>
-                  <strong class="score">{{ applicant.score }}</strong>
-                  <div class="row-actions">
-                    <button class="icon-button" type="button" aria-label="View applicant">
-                      <i-lucide name="eye" aria-hidden="true" />
+              <!-- Location -->
+              <label class="field">
+                <span>Location *</span>
+                <input type="text" formControlName="location" placeholder="e.g. Ho Chi Minh City" />
+                <app-field-error [control]="jobPostForm.get('location')" fieldName="Location"></app-field-error>
+              </label>
+
+              <!-- Salary -->
+              <label class="field">
+                <span>Salary ($) *</span>
+                <input type="number" formControlName="salary" placeholder="e.g. 1000" />
+                <app-field-error [control]="jobPostForm.get('salary')" fieldName="Salary"></app-field-error>
+              </label>
+
+              <!-- Quantity -->
+              <label class="field">
+                <span>Quantity *</span>
+                <input type="number" formControlName="quantity" placeholder="e.g. 5" />
+                <app-field-error [control]="jobPostForm.get('quantity')" fieldName="Quantity"></app-field-error>
+              </label>
+
+              <!-- Start Date -->
+              <label class="field">
+                <span>Start Date *</span>
+                <input type="date" formControlName="startDate" />
+                <app-field-error [control]="jobPostForm.get('startDate')" fieldName="Start Date"></app-field-error>
+              </label>
+
+              <!-- End Date -->
+              <label class="field">
+                <span>End Date *</span>
+                <input type="date" formControlName="endDate" />
+                <app-field-error [control]="jobPostForm.get('endDate')" fieldName="End Date"></app-field-error>
+              </label>
+
+              <!-- Required Skills -->
+              <label class="field field--wide">
+                <span>Required Skills *</span>
+
+                <div class="skills-input-wrapper select-control">
+                  <!-- Tag list -->
+                  @for (skill of getSelectedSkills(); track skill.id) {
+                  <span class="skill-tag">
+                    {{ skill.name }}
+                    <button type="button" class="remove-tag-btn" (click)="removeSkill(skill.id)"
+                      aria-label="Remove skill">
+                      &times;
                     </button>
-                    <button class="icon-button" type="button" aria-label="Schedule applicant">
-                      <i-lucide name="calendar-check" aria-hidden="true" />
-                    </button>
-                  </div>
-                </article>
-              }
-            </div>
-          </section>
-        }
-
-        @case ('company-profile') {
-          <section
-            class="dashboard-frame dashboard-frame--company-profile"
-            id="frame-hr-company-profile"
-            aria-labelledby="frame-hr-company-profile-title"
-          >
-            <header class="frame-header frame-header--with-action">
-              <div>
-                <h1 id="frame-hr-company-profile-title">Company Profile</h1>
-                <p>Keep employer branding, contact details, and hiring information current</p>
-              </div>
-              <app-button variant="primary" size="compact">
-                <i-lucide name="edit" aria-hidden="true" />
-                Edit Profile
-              </app-button>
-            </header>
-
-            <div class="company-layout">
-              <app-card ariaLabel="Company profile summary">
-                <div class="company-summary">
-                  <div class="company-logo" aria-hidden="true">TC</div>
-                  <h2>TechCorp Inc.</h2>
-                  <p>Technology · 501-1,000 employees</p>
-                  <span class="status-badge status-badge--green">Verified Employer</span>
-                </div>
-              </app-card>
-
-              <app-card cardTitle="Company Details" titleId="hr-company-details-title">
-                <div class="detail-grid">
-                  @for (detail of companyDetails; track detail.label) {
-                    <div class="detail-item">
-                      <i-lucide [name]="detail.icon" aria-hidden="true" />
-                      <span>
-                        <small>{{ detail.label }}</small>
-                        <strong>{{ detail.value }}</strong>
-                      </span>
-                    </div>
-                  }
-                </div>
-              </app-card>
-
-              <app-card cardTitle="Hiring Benefits" titleId="hr-company-benefits-title">
-                <div class="benefit-list">
-                  @for (benefit of benefits; track benefit) {
-                    <span><i-lucide name="shield-check" aria-hidden="true" />{{ benefit }}</span>
-                  }
-                </div>
-              </app-card>
-
-              <app-card cardTitle="Company Assets" titleId="hr-company-assets-title">
-                <div class="asset-row">
-                  <i-lucide name="file-text" aria-hidden="true" />
-                  <span>
-                    <strong>Company overview.pdf</strong>
-                    <small>Updated May 12, 2026</small>
                   </span>
-                  <app-button variant="outline" size="compact">
-                    <i-lucide name="upload" aria-hidden="true" />
-                    Replace
-                  </app-button>
+                  }
+
+                  <select class="embedded-select" (change)="addSkill($event)">
+                    <option value="" disabled selected></option>
+                    @for (skill of getAvailableSkills(); track skill.id) {
+                    <option [value]="skill.id">{{ skill.name }}</option>
+                    }
+                  </select>
                 </div>
-              </app-card>
+                <app-field-error [control]="jobPostForm.get('skills')" fieldName="Skills"></app-field-error>
+              </label>
+
+              <!-- Job description -->
+              <label class="field field--wide">
+                <span>Job description *</span>
+                <textarea formControlName="description" rows="5" placeholder="Detailed job description..."></textarea>
+                <app-field-error [control]="jobPostForm.get('description')" fieldName="Job Description"></app-field-error>
+              </label>
+
             </div>
-          </section>
+          </app-card>
+
+          <footer class="form-actions">
+            <app-button variant="outline" size="compact" type="button" (buttonClick)="selectFrame('my-jobs')">
+              Cancel
+            </app-button>
+            <app-button variant="primary" size="compact" type="submit">
+              <i-lucide name="send" aria-hidden="true" />
+              Publish Job
+            </app-button>
+          </footer>
+        </form>
+      </section>
+      }
+
+      @case ('my-jobs') {
+      <section class="dashboard-frame dashboard-frame--my-jobs" id="frame-hr-my-jobs"
+        aria-labelledby="frame-hr-my-jobs-title">
+        <header class="frame-header frame-header--with-action">
+          <div>
+            <h1 id="frame-hr-my-jobs-title">My Jobs</h1>
+            <p>Manage active, reviewing, and draft postings from one place</p>
+          </div>
+          <app-button variant="primary" size="compact" (buttonClick)="selectFrame('post-job')">
+            <i-lucide name="circle-plus" aria-hidden="true" />
+            New Job
+          </app-button>
+        </header>
+
+        <div class="frame-toolbar">
+          <label class="search-control">
+            <i-lucide name="search" aria-hidden="true" />
+            <input type="search" placeholder="Search job postings" aria-label="Search job postings" />
+          </label>
+
+        </div>
+
+        <div class="posting-list">
+          @for (job of jobs(); track job.id) {
+          <article class="posting-row">
+            <div class="posting-row__main">
+              <h2>{{ job.name }}</h2>
+              <p>{{ job.location }} · {{ job.level }} · Posted {{ job.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+
+            <div class="row-actions">
+              <button class="icon-button" type="button" aria-label="View job posting" (click)="viewJobDetail(job.id)">
+                <i-lucide name="eye" aria-hidden="true" />
+              </button>
+              <button class="icon-button" type="button" aria-label="Edit job posting" (click)="editJobDetail(job.id)">
+                <i-lucide name="edit" aria-hidden="true" />
+              </button>
+              <button class="icon-button icon-button--danger" type="button" aria-label="Delete job posting" (click)="onDeleteJob(job.id)">
+                <i-lucide name="trash-2" aria-hidden="true" />
+              </button>
+            </div>
+          </article>
+          } @empty {
+          <div style="text-align: center; padding: 32px; color: var(--muted-foreground);">
+            No job postings found.
+          </div>
+          }
+        </div>
+
+        @if (totalPages() > 1) {
+        <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+          <app-pagination [currentPage]="currentPage()" [totalPages]="totalPages()" [totalItems]="totalItems()"
+            [pageSize]="pageSize()" (pageChange)="onPageChange($event)" />
+        </div>
         }
+      </section>
+      }
+
+      @case ('applicants') {
+      <section class="dashboard-frame dashboard-frame--applicants" id="frame-hr-applicants"
+        aria-labelledby="frame-hr-applicants-title">
+        <header class="frame-header">
+          <h1 id="frame-hr-applicants-title">Applicants</h1>
+          <p>Review candidates, track stage, and move the right people forward</p>
+        </header>
+
+        <div class="frame-toolbar">
+          <label class="search-control">
+            <i-lucide name="search" aria-hidden="true" />
+            <input type="search" placeholder="Search applicants" aria-label="Search applicants" />
+          </label>
+          <select class="select-control" aria-label="Filter applicants">
+            <option>All Stages</option>
+            <option>PENDING</option>
+            <option>APPROVED</option>
+            <option>REJECTED</option>
+          </select>
+        </div>
+
+        <div class="applicant-list">
+          <!-- Đọc dữ liệu từ signal applicants() -->
+          @for (applicant of applicants(); track applicant.id) {
+          <article class="applicant-row">
+            <!-- Avatar lấy từ chữ đầu tiên của user.name -->
+            <div class="avatar" aria-hidden="true">
+              {{ applicant.user?.name?.slice(0, 1) || 'U' }}
+            </div>
+
+            <div class="applicant-row__main">
+              <h2>{{ applicant.user?.name }}</h2>
+              <p>
+                <strong>Applied Position:</strong> {{ applicant.job?.name }} <br>
+                <small class="text-muted">Email: {{ applicant.email }}</small> <br>
+                <small class="text-muted">Applied Date: {{ applicant.createdAt | date: 'dd/MM/yyyy HH:mm' }}</small>
+              </p>
+            </div>
+
+            <!-- Dropdown chọn Status của resume -->
+            <div class="status-dropdown-container">
+              <select class="select-control status-select" [value]="applicant.status"
+                (change)="onStatusChange(applicant, $event)">
+                <option value="PENDING">PENDING</option>
+                <option value="REVIEWING">REVIEWING</option>
+                <option value="APPROVED">APPROVED</option>
+                <option value="REJECTED">REJECTED</option>
+              </select>
+            </div>
+
+            <div class="row-actions">
+              <!-- Nút View Resume -->
+              <button class="icon-button" type="button" aria-label="View applicant resume"
+                (click)="viewResume(applicant)">
+                <i-lucide name="eye" aria-hidden="true" />
+              </button>
+
+              <!-- Nút Send Email -->
+              <button class="icon-button" type="button" aria-label="Send email to applicant"
+                (click)="sendEmail(applicant)">
+                <i-lucide name="mail" aria-hidden="true" />
+              </button>
+            </div>
+          </article>
+          } @empty {
+          <div style="text-align: center; padding: 32px; color: var(--muted-foreground);">
+            No candidate profiles found.
+          </div>
+          }
+        </div>
+      </section>
+      }
+
+
+      @case ('company-profile') {
+      <section class="dashboard-frame dashboard-frame--company-profile" id="frame-hr-company-profile"
+        aria-labelledby="frame-hr-company-profile-title">
+
+        @if (company() === null) {
+        <!-- CASE 1: No company linked yet -> Show form to enter details -->
+        <header class="frame-header">
+          <div>
+            <h1 id="frame-hr-company-profile-title">Create Company Profile</h1>
+            <p>Your recruiter account is not linked to any company yet. Please enter the details below.</p>
+          </div>
+        </header>
+        <app-card cardTitle="Company Details" titleId="create-company-title">
+          <form [formGroup]="companyForm" (ngSubmit)="onCreateCompanySubmit()" class="job-form">
+            <div class="form-grid">
+              <label class="field field--wide">
+                <span>Company Name *</span>
+                <input type="text" formControlName="name" placeholder="e.g. TechCorp Inc." />
+                <app-field-error [control]="companyForm.get('name')" fieldName="Company Name"></app-field-error>
+              </label>
+
+              <label class="field">
+                <span>Industry *</span>
+                <input type="text" formControlName="industry" placeholder="e.g. Software Engineering" />
+                <app-field-error [control]="companyForm.get('industry')" fieldName="Industry"></app-field-error>
+              </label>
+
+              <label class="field">
+                <span>Company Size (number of employees) *</span>
+                <input type="number" formControlName="companySize" placeholder="e.g. 100" />
+                <app-field-error [control]="companyForm.get('companySize')" fieldName="Company Size"></app-field-error>
+              </label>
+              <label class="field">
+                <span>Founded Year *</span>
+                <input type="number" formControlName="founded" placeholder="e.g. 2015" />
+                <app-field-error [control]="companyForm.get('founded')" fieldName="Founded Year"></app-field-error>
+              </label>
+              <label class="field">
+                <span>Headquarters Address *</span>
+                <input type="text" formControlName="address" placeholder="e.g. District 1, Ho Chi Minh City" />
+                <app-field-error [control]="companyForm.get('address')" fieldName="Address"></app-field-error>
+              </label>
+              <label class="field field--wide">
+                <span>Company Description</span>
+                <textarea formControlName="description" rows="4"
+                  placeholder="Brief introduction about your company..."></textarea>
+              </label>
+              <!-- Logo upload field -->
+              <label class="field field--wide">
+                <span>Company Logo</span>
+
+                <div class="logo-upload-container">
+                  <!-- Preview box -->
+                  <div class="logo-preview-box" aria-hidden="true">
+                    @if (logoPreviewUrl()) {
+                    <img [src]="logoPreviewUrl()" alt="Logo preview" />
+                    } @else {
+                    <i-lucide name="upload"></i-lucide>
+                    }
+                  </div>
+
+                  <!-- Button column -->
+                  <div class="logo-upload-actions">
+                    <input type="file" id="company-logo-input" accept="image/*" (change)="onLogoSelected($event)"
+                      style="display: none;" />
+                    <!-- Note: style="display: none;" on input type="file" is the only required exception for hidden file inputs -->
+
+                    <label for="company-logo-input" class="logo-upload-button">
+                      <i-lucide name="upload"></i-lucide>
+                      {{ isUploadingLogo() ? 'Uploading...' : 'Choose Logo' }}
+                    </label>
+
+                    <small>Supports JPG, PNG. Max size 2MB.</small>
+                  </div>
+                </div>
+              </label>
+
+            </div>
+
+            <footer class="form-actions" style="margin-top: 1.5rem; text-align: right;">
+              <app-button variant="primary" size="compact" type="submit">
+                <i-lucide name="send" aria-hidden="true" />
+                Create Company
+              </app-button>
+            </footer>
+          </form>
+        </app-card>
+        } @else {
+        <header class="frame-header frame-header--with-action">
+          <div>
+            <h1 id="frame-hr-company-profile-title">Company Profile</h1>
+            <p>Keep employer branding, contact details, and hiring information current</p>
+          </div>
+          <app-button variant="primary" size="compact" (buttonClick)="onEditCompany()">
+            <i-lucide name="edit" aria-hidden="true" />
+            Edit Profile
+          </app-button>
+        </header>
+        <div class="company-layout">
+          <app-card ariaLabel="Company profile summary">
+            <div class="company-summary">
+              <div class="company-logo" aria-hidden="true">
+                <img [src]="companyLogoUrl()" [alt]="company()?.name"
+                  style="width: 100%; height: 100%; object-fit: cover;" />
+              </div>
+              <h2>{{ company()?.name }}</h2>
+              <p>{{ company()?.industry }} · {{ company()?.companySize }} employees</p>
+            </div>
+          </app-card>
+          <app-card cardTitle="Company Details" titleId="hr-company-details-title">
+            <div class="detail-grid">
+              <div class="detail-item">
+                <i-lucide name="building-2" aria-hidden="true" />
+                <span>
+                  <small>Company Name</small>
+                  <strong>{{ company()?.name }}</strong>
+                </span>
+              </div>
+              <div class="detail-item">
+                <i-lucide name="globe" aria-hidden="true" />
+                <span>
+                  <small>Founded Year</small>
+                  <strong>{{ company()?.founded }}</strong>
+                </span>
+              </div>
+              <div class="detail-item">
+                <i-lucide name="map-pin" aria-hidden="true" />
+                <span>
+                  <small>Address</small>
+                  <strong>{{ company()?.address }}</strong>
+                </span>
+              </div>
+              <div class="detail-item">
+                <i-lucide name="shield-check" aria-hidden="true" />
+                <span>
+                  <small>Industry</small>
+                  <strong>{{ company()?.industry }}</strong>
+                </span>
+              </div>
+            </div>
+          </app-card>
+
+        </div>
+        }
+      </section>
+      }
       }
     </div>
   </div>
 </main>
+
+<app-modal-form [open]="isApplyModalOpen()" title="Edit Company Profile"
+  subtitle="Update your business details and corporate logo" submitLabel="Save Changes" cancelLabel="Cancel"
+  [fields]="editCompanyFields" [initialValues]="company()" (closed)="onCloseModal()"
+  (submitted)="onEditCompanySubmit($event)">
+</app-modal-form>
+
+@if (isJobModalOpen()) {
+<div class="app-modal-form__backdrop" (click)="onCloseJobModal()">
+  <div class="app-modal-form" role="dialog" aria-modal="true"
+    style="width: min(100%, 640px); max-height: min(100vh - 48px, 800px);" (click)="$event.stopPropagation()">
+    <header class="app-modal-form__header">
+      <div class="app-modal-form__header-copy">
+        <h2 class="app-modal-form__title">{{ isEditMode() ? 'Edit Job Posting' : 'Job Posting Details' }}</h2>
+        <p class="app-modal-form__subtitle">
+          {{ isEditMode() ? 'Update the job posting details below' : 'Detailed information of the job posting (View mode)' }}
+        </p>
+      </div>
+
+      <button class="app-modal-form__close" type="button" aria-label="Close modal" (click)="onCloseJobModal()">
+        <i-lucide class="app-modal-form__close-icon" name="x" aria-hidden="true" />
+      </button>
+    </header>
+
+    <form class="app-modal-form__body" [formGroup]="jobModalForm" (ngSubmit)="onSubmitModalJob()">
+      <div class="form-grid">
+        <!-- Job title -->
+        <label class="field field--wide">
+          <span>Job title *</span>
+          <input type="text" formControlName="name" placeholder="e.g. Backend Java Intern" />
+          <app-field-error [control]="jobModalForm.get('name')" fieldName="Job Title"></app-field-error>
+        </label>
+
+        <!-- Level dropdown -->
+        <label class="field">
+          <span>Level *</span>
+          <select formControlName="level" class="select-control">
+            <option value="INTERN">INTERN</option>
+            <option value="FRESHER">FRESHER</option>
+            <option value="JUNIOR">JUNIOR</option>
+            <option value="MIDDLE">MIDDLE</option>
+            <option value="SENIOR">SENIOR</option>
+          </select>
+          <app-field-error [control]="jobModalForm.get('level')" fieldName="Level"></app-field-error>
+        </label>
+
+        <!-- Location -->
+        <label class="field">
+          <span>Location *</span>
+          <input type="text" formControlName="location" placeholder="e.g. Ho Chi Minh City" />
+          <app-field-error [control]="jobModalForm.get('location')" fieldName="Location"></app-field-error>
+        </label>
+
+        <!-- Salary -->
+        <label class="field">
+          <span>Salary ($) *</span>
+          <input type="number" formControlName="salary" placeholder="e.g. 1000" />
+          <app-field-error [control]="jobModalForm.get('salary')" fieldName="Salary"></app-field-error>
+        </label>
+
+        <!-- Quantity -->
+        <label class="field">
+          <span>Quantity *</span>
+          <input type="number" formControlName="quantity" placeholder="e.g. 5" />
+          <app-field-error [control]="jobModalForm.get('quantity')" fieldName="Quantity"></app-field-error>
+        </label>
+
+        <!-- Start Date -->
+        <label class="field">
+          <span>Start Date *</span>
+          <input type="date" formControlName="startDate" />
+          <app-field-error [control]="jobModalForm.get('startDate')" fieldName="Start Date"></app-field-error>
+        </label>
+
+        <!-- End Date -->
+        <label class="field">
+          <span>End Date *</span>
+          <input type="date" formControlName="endDate" />
+          <app-field-error [control]="jobModalForm.get('endDate')" fieldName="End Date"></app-field-error>
+        </label>
+
+        <!-- Required Skills -->
+        <label class="field field--wide">
+          <span>Required Skills *</span>
+
+          <div class="skills-input-wrapper select-control">
+            <!-- Tag list -->
+            @for (skill of getSelectedSkillsForModal(); track skill.id) {
+            <span class="skill-tag">
+              {{ skill.name }}
+              @if (isEditMode()) {
+              <button type="button" class="remove-tag-btn" (click)="removeSkillFromModal(skill.id)"
+                aria-label="Remove skill">
+                &times;
+              </button>
+              }
+            </span>
+            }
+
+            @if (isEditMode()) {
+            <select class="embedded-select" (change)="addSkillToModal($event)">
+              <option value="" disabled selected></option>
+              @for (skill of getAvailableSkillsForModal(); track skill.id) {
+              <option [value]="skill.id">{{ skill.name }}</option>
+              }
+            </select>
+            }
+          </div>
+          <app-field-error [control]="jobModalForm.get('skills')" fieldName="Skills"></app-field-error>
+        </label>
+
+        <!-- Job description -->
+        <label class="field field--wide">
+          <span>Job description *</span>
+          <textarea formControlName="description" rows="5" placeholder="Detailed job description..."></textarea>
+          <app-field-error [control]="jobModalForm.get('description')" fieldName="Job Description"></app-field-error>
+        </label>
+      </div>
+
+      <footer class="app-modal-form__actions">
+        <app-button [type]="'button'" (buttonClick)="onCloseJobModal()">
+          {{ isEditMode() ? 'Cancel' : 'Close' }}
+        </app-button>
+        @if (isEditMode()) {
+        <app-button [type]="'submit'" variant="primary">
+          Save Changes
+        </app-button>
+        }
+      </footer>
+    </form>
+  </div>
+</div>
+}
+
+<!-- Modal to preview CV document (.docx) -->
+@if (isCvPreviewOpen()) {
+<div class="app-modal-form__backdrop" (click)="closeCvPreview()">
+  <div class="app-modal-form" role="dialog" aria-modal="true"
+    style="width: min(100%, 900px); max-height: min(100vh - 48px, 90vh);" (click)="$event.stopPropagation()">
+    <header class="app-modal-form__header" style="border-bottom: 1px solid var(--border); padding-bottom: 16px;">
+      <div class="app-modal-form__header-copy">
+        <h2 class="app-modal-form__title">View CV Details</h2>
+        <p class="app-modal-form__subtitle">
+          Candidate: <strong>{{ selectedApplicantName() }}</strong>
+        </p>
+      </div>
+
+      <button class="app-modal-form__close" type="button" aria-label="Close modal" (click)="closeCvPreview()">
+        <i-lucide class="app-modal-form__close-icon" name="x" aria-hidden="true" />
+      </button>
+    </header>
+
+    <div class="app-modal-form__body"
+      style="padding: 20px; overflow-y: auto; background-color: var(--muted); max-height: calc(90vh - 120px);">
+      @if (isLoadingCv()) {
+      <div style="text-align: center; padding: 48px; color: var(--muted-foreground);">
+        <div class="loading-spinner" style="margin-bottom: 12px;"></div>
+        Loading CV data from server...
+      </div>
+      }
+      @if (!isLoadingCv()) {
+      @if (isPdf()) {
+      <iframe [src]="pdfUrl()" width="100%" height="600px"
+        style="border: none; background: white; border-radius: var(--radius-md);"></iframe>
+      } @else {
+      <!-- Container where docx-preview library will render the Word document -->
+      <div id="docx-preview-container" class="docx-viewer-content"></div>
+      }
+      }
+    </div>
+  </div>
+</div>
+}

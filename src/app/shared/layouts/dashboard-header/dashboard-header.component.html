@@ -1,56 +1,47 @@
 <header class="dashboard-header">
   <div class="dashboard-header__container">
-    <a class="brand" routerLink="/dashboard-hero" aria-label="JobHunter home">
+    <a class="brand" routerLink="/dashboard" aria-label="JobHunter home">
       <span class="brand__icon" aria-hidden="true">
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M8.25 8.25V6.75C8.25 5.92157 8.92157 5.25 9.75 5.25H14.25C15.0784 5.25 15.75 5.92157 15.75 6.75V8.25M6 8.25H18C18.8284 8.25 19.5 8.92157 19.5 9.75V18C19.5 18.8284 18.8284 19.5 18 19.5H6C5.17157 19.5 4.5 18.8284 4.5 18V9.75C4.5 8.92157 5.17157 8.25 6 8.25Z"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-          <path
-            d="M9 8.25V19.5M15 8.25V19.5"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-          />
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M9 8.25V19.5M15 8.25V19.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
         </svg>
       </span>
       <span class="brand__name">JobHunter</span>
     </a>
 
     <nav class="dashboard-nav" aria-label="Primary navigation">
+      @if (user() && dashboardLink()) {
+      <a class="dashboard-nav__link" [routerLink]="dashboardLink()">My Dashboard</a>
+      }
       <a class="dashboard-nav__link" routerLink="/find-jobs">Find Jobs</a>
       <a class="dashboard-nav__link" routerLink="/companies">Companies</a>
-      <a class="dashboard-nav__link" href="#">Resources</a>
     </nav>
 
     <div class="dashboard-actions">
       @if (user(); as currentUser) {
-        <div class="dashboard-user" aria-label="Signed in user">
-          <span class="dashboard-user__avatar" aria-hidden="true">
-            {{ currentUser.name.charAt(0) }}
-          </span>
-          <span class="dashboard-user__meta">
-            <span class="dashboard-user__name">{{ currentUser.name }}</span>
-            <span class="dashboard-user__role">{{ currentUser.role }}</span>
-          </span>
-        </div>
+      <div class="dashboard-user" aria-label="Signed in user">
+        <span class="dashboard-user__avatar" aria-hidden="true" style="overflow: hidden;">
+          @if (avatarUrl()) {
+          <img [src]="avatarUrl()" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" />
+          } @else {
+          {{ currentUser.name.charAt(0) }}
+          }
+        </span>
+        <span class="dashboard-user__meta">
+          <span class="dashboard-user__name">{{ currentUser.name }}</span>
+          <span class="dashboard-user__role">{{ currentUser.role }}</span>
+        </span>
+      </div>
 
-        <button class="dashboard-actions__logout" type="button" (click)="onLogout()">
-          Logout
-        </button>
+      <button class="dashboard-actions__logout" type="button" (click)="onLogout()">
+        Logout
+      </button>
       } @else {
-        <a class="dashboard-actions__login" routerLink="/login">Login</a>
-        <a class="dashboard-actions__signup" routerLink="/register-job-seeker">Sign Up</a>
+      <a class="dashboard-actions__login" routerLink="/login">Login</a>
+      <a class="dashboard-actions__signup" routerLink="/register-job-seeker">Sign Up</a>
       }
     </div>
   </div>

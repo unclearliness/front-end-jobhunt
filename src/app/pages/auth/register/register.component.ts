@@ -45,13 +45,13 @@ export class RegisterComponent {
       address: formValue.address,
     };
 
-    const request$ = formValue.isEmployer 
-      ? this.authService.registerHr(payload) 
+    const request$ = formValue.isEmployer
+      ? this.authService.registerHr(payload)
       : this.authService.register(payload);
 
     request$.subscribe({
       next: () => {
-        this.toastService.success(formValue.isEmployer ? 'Đăng ký Nhà tuyển dụng thành công!' : 'Đăng ký thành công!');
+        this.toastService.success(formValue.isEmployer ? 'Register Employer successfully!' : 'Register successfully');
         void this.router.navigateByUrl('/login');
       },
       error: (error: HttpErrorResponse) => {

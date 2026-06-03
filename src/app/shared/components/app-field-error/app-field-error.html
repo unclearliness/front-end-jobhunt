@@ -1,13 +1,16 @@
 @if (control(); as ctrl) {
   @if (ctrl.touched && ctrl.errors) {
     @if (ctrl.hasError('required')) {
-      <span class="form-error">{{ fieldName() }} không được bỏ trống</span>
+      <span class="form-error">{{ fieldName() }} is required</span>
     }
     @if (ctrl.hasError('email')) {
-      <span class="form-error">{{ fieldName() }} không đúng định dạng</span>
+      <span class="form-error">{{ fieldName() }} is invalid</span>
     }
     @if (ctrl.hasError('minlength')) {
-      <span class="form-error">{{ fieldName() }} phải có ít nhất {{ ctrl.getError('minlength').requiredLength }} ký tự</span>
+      <span class="form-error">{{ fieldName() }} must be at least {{ ctrl.getError('minlength').requiredLength }} characters</span>
+    }
+    @if (ctrl.hasError('min')) {
+      <span class="form-error">{{ fieldName() }} must be at least {{ ctrl.getError('min').min }}</span>
     }
   }
 }

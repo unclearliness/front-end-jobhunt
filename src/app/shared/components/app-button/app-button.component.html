@@ -1,11 +1,5 @@
-<button
-  class="app-button"
-  [class.app-button--primary]="variant === 'primary'"
-  [class.app-button--inverse]="variant === 'inverse'"
-  [class.app-button--compact]="size === 'compact'"
-  [class.app-button--full]="fullWidth"
-  [type]="type"
-  (click)="onClick()"
->
+<button class="app-button" [class.app-button--primary]="variant === 'primary'"
+  [class.app-button--inverse]="variant === 'inverse'" [class.app-button--compact]="size === 'compact'"
+  [class.app-button--full]="fullWidth" [disabled]="disabled" [type]="type" (click)="onClick()">
   <ng-content />
 </button>

@@ -1,4 +1,5 @@
 import { CanMatchFn, Routes } from '@angular/router';
+import { roleGuard } from './guards/role.guard';
 
 const hasAccessToken: CanMatchFn = () =>
   typeof window !== 'undefined' && !!window.localStorage.getItem('accessToken');
@@ -13,6 +14,13 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () =>
       import('./pages/auth/login/login.component').then((component) => component.LoginComponent),
+  },
+  {
+    path: 'unauthorized',
+    loadComponent: () =>
+      import('./pages/auth/unauthorized/unauthorized.component').then(
+        (component) => component.UnauthorizedComponent,
+      ),
   },
   {
     path: 'find-jobs',
@@ -51,22 +59,20 @@ export const routes: Routes = [
   },
 
   {
-    path: 'dashboard',
+    path: 'user-dashboard',
     canMatch: [hasAccessToken],
+    canActivate: [roleGuard(['user'])],
     loadComponent: () =>
       import('./pages/dashboard/user-dashboard/user-dashboard.component').then(
         (component) => component.UserDashboardComponent,
       ),
   },
   {
-    path: 'dashboard',
-    loadComponent: () =>
-      import('./pages/dashboard/dashboard-hero/dashboard-hero.component').then(
-        (component) => component.DashboardHeroComponent,
-      ),
+    path: 'user-dashboard',
+    redirectTo: '/dashboard',
   },
   {
-    path: 'dashboard-hero',
+    path: 'dashboard',
     loadComponent: () =>
       import('./pages/dashboard/dashboard-hero/dashboard-hero.component').then(
         (component) => component.DashboardHeroComponent,
@@ -75,6 +81,7 @@ export const routes: Routes = [
   {
     path: 'hr-dashboard',
     canMatch: [hasAccessToken],
+    canActivate: [roleGuard(['hr'])],
     loadComponent: () =>
       import('./pages/dashboard/hr-dashboard/hr-dashboard.component').then(
         (component) => component.HrDashboardComponent,
@@ -87,6 +94,7 @@ export const routes: Routes = [
   {
     path: 'admin-dashboard',
     canMatch: [hasAccessToken],
+    canActivate: [roleGuard(['admin'])],
     loadComponent: () =>
       import('./pages/dashboard/admin-dashboard/admin-dashboard.component').then(
         (component) => component.AdminDashboardComponent,

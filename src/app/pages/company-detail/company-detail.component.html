@@ -3,7 +3,7 @@
 
   <section class="company-detail" aria-labelledby="company-detail-title">
     <div class="company-detail__container">
-      <a class="back-link" routerLink="/companies">
+      <a class="back-link" (click)="onBack($event)" style="cursor: pointer;">
         <i-lucide class="back-link__icon" name="arrow-left" aria-hidden="true" />
         <span>Back to Companies</span>
       </a>
@@ -11,65 +11,50 @@
       <div class="company-detail__layout">
         <div class="company-detail__main">
           @if (detailState().isLoading) {
-            <app-card ariaLabel="Loading company details">
-              <p class="company-detail__status">Loading company information...</p>
-            </app-card>
+          <app-card ariaLabel="Loading company details">
+            <p class="company-detail__status">Loading company information...</p>
+          </app-card>
           } @else if (detailState().errorMessage) {
-            <app-card ariaLabel="Company details error">
-              <p class="company-detail__status company-detail__status--error">
-                {{ detailState().errorMessage }}
-              </p>
-            </app-card>
+          <app-card ariaLabel="Company details error">
+            <p class="company-detail__status company-detail__status--error">
+              {{ detailState().errorMessage }}
+            </p>
+          </app-card>
           } @else {
-            <app-card>
-              <app-company-info [company]="detailState().companyInfo" headingLevel="h1" />
-            </app-card>
+          <app-card>
+            <app-company-info [company]="detailState().companyInfo" headingLevel="h1" />
+          </app-card>
 
-            <app-card cardTitle="About the Company" titleId="company-about-title">
-              <div class="company-sections">
-                @for (section of detailState().sections; track section.title; let sectionIndex = $index) {
-                  <section
-                    class="company-section"
-                    [attr.aria-labelledby]="'company-section-' + sectionIndex"
-                  >
-                    @if (section.content) {
-                      <p class="company-section__text">{{ section.content }}</p>
-                    }
-
-                    @if (section.items?.length) {
-                      <ul class="company-section__list">
-                        @for (item of section.items; track item) {
-                          <li>{{ item }}</li>
-                        }
-                      </ul>
-                    }
-                  </section>
+          <app-card cardTitle="About the Company" titleId="company-about-title">
+            <div class="company-sections">
+              @for (section of detailState().sections; track section.title; let sectionIndex = $index) {
+              <section class="company-section" [attr.aria-labelledby]="'company-section-' + sectionIndex">
+                @if (section.content) {
+                <p class="company-section__text">{{ section.content }}</p>
                 }
-              </div>
-            </app-card>
+
+                @if (section.items?.length) {
+                <ul class="company-section__list">
+                  @for (item of section.items; track item) {
+                  <li>{{ item }}</li>
+                  }
+                </ul>
+                }
+              </section>
+              }
+            </div>
+          </app-card>
           }
         </div>
 
         <aside class="company-detail__sidebar" aria-label="Company details and actions">
           @if (!detailState().isLoading && !detailState().errorMessage) {
-            <app-quick-stats
-              title="Company Info"
-              titleId="company-info-title"
-              variant="summary"
-              [items]="detailState().companyInfoRows"
-            />
+          <app-quick-stats title="Company Info" titleId="company-info-title" variant="summary"
+            [items]="detailState().companyInfoRows" />
 
-            <app-quick-stats
-              title="Quick Stats"
-              titleId="company-quick-stats-title"
-              [items]="detailState().quickStats"
-            />
+          <app-quick-stats title="Quick Stats" titleId="company-quick-stats-title" [items]="detailState().quickStats" />
 
-            <app-card ariaLabel="Follow company">
-              <app-button variant="primary" [fullWidth]="true" (buttonClick)="onFollowCompany()">
-                Follow Company
-              </app-button>
-            </app-card>
+
           }
         </aside>
       </div>

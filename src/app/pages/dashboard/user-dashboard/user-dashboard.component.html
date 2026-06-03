@@ -27,7 +27,7 @@
         </header>
 
         <div class="stats-grid">
-          @for (stat of overviewStats; track stat.label) {
+          @for (stat of overviewStats(); track stat.label) {
           <article class="stat-card">
             <div class="stat-card__header">
               <h2>{{ stat.label }}</h2>
@@ -68,20 +68,6 @@
               </button>
             </div>
           </app-card>
-
-          <app-card cardTitle="Recent Activity" titleId="overview-activity-title">
-            <div class="activity-list">
-              @for (activity of recentActivities; track activity.title) {
-              <article class="activity-item">
-                <span>
-                  <strong>{{ activity.title }}</strong>
-                  <small>{{ activity.company }}</small>
-                </span>
-                <time>{{ activity.time }}</time>
-              </article>
-              }
-            </div>
-          </app-card>
         </div>
       </section>
       }
@@ -94,38 +80,35 @@
             <h1 id="frame-dashboard-applied-jobs-title">Applied Jobs</h1>
             <p>Monitor every application from submission to final decision</p>
           </div>
-          <app-button variant="primary" size="compact">Find More Jobs</app-button>
         </header>
-
-        <div class="frame-toolbar">
-          <label class="search-control">
-            <i-lucide name="search" aria-hidden="true" />
-            <input type="search" placeholder="Search applied jobs" aria-label="Search applied jobs" />
-          </label>
-          <select class="select-control" aria-label="Filter applications">
-            <option>All Status</option>
-            <option>Under Review</option>
-            <option>Interview</option>
-            <option>Pending</option>
-          </select>
-        </div>
 
         <div class="application-list">
           @for (application of jobs(); track application.title) {
           <article class="application-row">
             <div class="company-mark" aria-hidden="true">
+              @if (application.logoUrl) {
+              <img [src]="application.logoUrl" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" />
+              } @else {
               {{ application.company.slice(0, 2).toUpperCase() }}
+              }
             </div>
             <div class="application-row__main">
               <h2>{{ application.title }}</h2>
               <p>{{ application.company }} · {{ application.location }}</p>
-              <small>Applied {{ application.timePosted }}</small>
+              <small>Applied on {{ application.createdAt }}</small>
             </div>
             <div class="application-row__meta">
-              <span class="status-badge status-badge--green">{{ application.resumeStatus}}</span>
+              <span class="status-badge"
+                [class.status-badge--yellow]="application.resumeStatus === 'PENDING'"
+                [class.status-badge--blue]="application.resumeStatus === 'REVIEWING'"
+                [class.status-badge--green]="application.resumeStatus === 'APPROVED'"
+                [class.status-badge--red]="application.resumeStatus === 'REJECTED'">
+                {{ application.resumeStatus }}
+              </span>
             </div>
-            <button class="icon-button" type="button" aria-label="View application">
-              <i-lucide name="eye" aria-hidden="true" />
+            <button class="icon-button" type="button" aria-label="View application"
+              [routerLink]="['/jobs', application.id]">
+              <i-lucide class="icon-eye" name="eye" aria-hidden="true" />
             </button>
           </article>
           }
@@ -141,19 +124,27 @@
             <h1 id="frame-dashboard-saved-jobs-title">Saved Jobs</h1>
             <p>Review bookmarked roles and apply when you are ready</p>
           </div>
-          <app-button variant="outline" size="compact">Clear Filters</app-button>
         </header>
 
         <div class="job-card-grid">
-          @for (job of savedJobs; track job.title) {
+          @for (job of savedJobs(); track job.title) {
           <article class="dashboard-job-card">
             <header class="dashboard-job-card__header">
-              <div class="company-mark" aria-hidden="true">{{ job.initials }}</div>
-              <div>
-                <h2>{{ job.title }}</h2>
-                <p>{{ job.company }}</p>
+              <div class="dashboard-job-card__info">
+                <div class="company-mark" aria-hidden="true" style="overflow: hidden;">
+                  @if (job.logoUrl) {
+                  <img [src]="job.logoUrl" alt="Logo" style="width: 100%; height: 100%; object-fit: cover;" />
+                  } @else {
+                  {{ job.initials }}
+                  }
+                </div>
+                <div class="company-name">
+                  <h2 style="cursor: pointer;" [routerLink]="['/jobs', job.id]">{{ job.title }}</h2>
+                  <p>{{ job.company }}</p>
+                </div>
               </div>
-              <button class="icon-button" type="button" aria-label="Remove saved job">
+              <button class="icon-button" type="button" aria-label="Remove saved job"
+                (click)="onRemoveSavedJob(job.id)">
                 <i-lucide name="trash-2" aria-hidden="true" />
               </button>
             </header>
@@ -169,70 +160,13 @@
               }
             </div>
             <footer class="card-actions">
-              <app-button variant="primary" size="compact" [fullWidth]="true">Apply Now</app-button>
+              <app-button variant="primary" size="compact" [fullWidth]="true" [routerLink]="['/jobs', job.id]">Apply
+                Now</app-button>
             </footer>
           </article>
+          } @empty {
+          <div class="no-data">No saved jobs found.</div>
           }
-        </div>
-      </section>
-      }
-
-      @case ('recommendations') {
-      <section class="dashboard-frame dashboard-frame--recommendations" id="frame-dashboard-recommendations"
-        aria-labelledby="frame-dashboard-recommendations-title">
-        <header class="frame-header">
-          <h1 id="frame-dashboard-recommendations-title">Recommendations</h1>
-          <p>Personalized roles based on your profile, skills, and saved jobs</p>
-        </header>
-
-        <div class="recommendation-layout">
-          <div class="recommendation-list">
-            @for (job of recommendations; track job.title) {
-            <article class="recommendation-card">
-              <div class="recommendation-card__score">
-                <i-lucide name="star" aria-hidden="true" />
-                <span>{{ job.match }}</span>
-              </div>
-              <header class="dashboard-job-card__header">
-                <div class="company-mark" aria-hidden="true">{{ job.initials }}</div>
-                <div>
-                  <h2>{{ job.title }}</h2>
-                  <p>{{ job.company }}</p>
-                </div>
-              </header>
-              <div class="job-details">
-                <span><i-lucide name="map-pin" aria-hidden="true" />{{ job.location }}</span>
-                <span><i-lucide name="dollar-sign" aria-hidden="true" />{{ job.salary }}</span>
-              </div>
-              <div class="tag-list">
-                @for (tag of job.tags; track tag) {
-                <span>{{ tag }}</span>
-                }
-              </div>
-              <footer class="card-actions card-actions--split">
-                <app-button variant="outline" size="compact">Save</app-button>
-                <app-button variant="primary" size="compact">Apply</app-button>
-              </footer>
-            </article>
-            }
-          </div>
-
-          <app-card cardTitle="Recommendation Settings" titleId="recommendation-settings-title">
-            <div class="settings-list">
-              <label>
-                <span>Remote jobs</span>
-                <input type="checkbox" checked />
-              </label>
-              <label>
-                <span>Senior roles</span>
-                <input type="checkbox" checked />
-              </label>
-              <label>
-                <span>Salary above $120k</span>
-                <input type="checkbox" checked />
-              </label>
-            </div>
-          </app-card>
         </div>
       </section>
       }
@@ -254,7 +188,14 @@
         <div class="profile-layout">
           <app-card ariaLabel="Candidate profile summary">
             <div class="profile-summary">
-              <div class="profile-avatar" aria-hidden="true">{{ userInitial() }}</div>
+              <div class="profile-avatar" aria-hidden="true"
+                style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                @if (userAvatarUrl()) {
+                <img [src]="userAvatarUrl()" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" />
+                } @else {
+                {{ userInitial() }}
+                }
+              </div>
               <h2>{{ userProfile()?.name}}</h2>
             </div>
           </app-card>
@@ -275,7 +216,7 @@
               <div class="profile-detail">
                 <i-lucide name="user" aria-hidden="true" />
                 <span>
-                  <small>Họ và tên</small>
+                  <small>Full Name</small>
                   <strong>{{ profile.name }}</strong>
                 </span>
               </div>
@@ -284,8 +225,8 @@
               <div class="profile-detail">
                 <i-lucide name="calendar-check" aria-hidden="true" />
                 <span>
-                  <small>Tuổi</small>
-                  <strong>{{ profile.age || 'Chưa cập nhật' }}</strong>
+                  <small>Age</small>
+                  <strong>{{ profile.age || 'Not updated' }}</strong>
                 </span>
               </div>
 
@@ -293,8 +234,8 @@
               <div class="profile-detail">
                 <i-lucide name="user" aria-hidden="true" />
                 <span>
-                  <small>Giới tính</small>
-                  <strong>{{ profile.gender || 'Chưa cập nhật' }}</strong>
+                  <small>Gender</small>
+                  <strong>{{ profile.gender || 'Not updated' }}</strong>
                 </span>
               </div>
 
@@ -302,14 +243,14 @@
               <div class="profile-detail">
                 <i-lucide name="map-pin" aria-hidden="true" />
                 <span>
-                  <small>Địa chỉ</small>
-                  <strong>{{ profile.address || 'Chưa cập nhật' }}</strong>
+                  <small>Address</small>
+                  <strong>{{ profile.address || 'Not updated' }}</strong>
                 </span>
               </div>
             </div>
             } @else {
             <div class="profile-loading" style="padding: 1rem; text-align: center;">
-              <span>Đang tải thông tin cá nhân...</span>
+              <span>Loading personal details...</span>
             </div>
             }
           </app-card>
@@ -323,7 +264,7 @@
     </div>
   </div>
 </main>
-<app-modal-form [open]="isApplyModalOpen()" title="Chỉnh sửa thông tin cá nhân" subtitle="Cập nhật thông tin của bạn"
-  submitLabel="Lưu thay đổi" cancelLabel="Hủy" [fields]="editProfileFields" [initialValues]="profileInitialValues()"
+<app-modal-form [open]="isApplyModalOpen()" title="Edit Personal Information" subtitle="Update your profile details"
+  submitLabel="Save Changes" cancelLabel="Cancel" [fields]="editProfileFields" [initialValues]="profileInitialValues()"
   (closed)="onCloseModal()" (submitted)="onEditProfileSubmit($event)">
 </app-modal-form>

@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { renderAsync } from 'docx-preview';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import { AuthService } from '../../../services/auth.service';
+import { CompanyApi, CompanyService } from '../../../services/company.service';
 import {
   BriefcaseBusiness,
   Building2,
@@ -25,10 +31,21 @@ import {
   Upload,
   UserCheck,
   Users,
+  X,
 } from 'lucide-angular';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../../shared/components/app-card/app-card.component';
 import { DashboardHeaderComponent } from '../../../shared/layouts/dashboard-header/dashboard-header.component';
+import { API_ENDPOINTS } from '../../../shared/constants/api-endpoints';
+import { ToastService } from '../../../services/toast.service';
+import { FileService } from '../../../services/file.service';
+import { AppModalFormComponent, ModalFormField, ModalFormSubmitEvent } from "../../../shared/components/app-modal-form/app-modal-form.component";
+import { DatePipe } from '@angular/common';
+import { ResumeService } from '../../../services/resume.service';
+import { SkillService } from '../../../services/skill.service';
+import { JobService } from '../../../services/job.service';
+import { AppPaginationComponent } from '../../../shared/components/app-pagination/app-pagination.component';
+
 
 type HrDashboardFrameId = 'overview' | 'post-job' | 'my-jobs' | 'applicants' | 'company-profile';
 
@@ -47,11 +64,7 @@ interface HrStatCard {
   readonly icon: string;
 }
 
-interface RecentApplication {
-  readonly name: string;
-  readonly role: string;
-  readonly time: string;
-}
+
 
 interface JobPosting {
   readonly title: string;
@@ -80,9 +93,11 @@ interface CompanyDetail {
   readonly icon: string;
 }
 
+import { FieldErrorComponent } from '../../../shared/components/app-field-error/app-field-error';
+
 @Component({
   selector: 'app-hr-dashboard',
-  imports: [DashboardHeaderComponent, LucideAngularModule, AppCardComponent, AppButtonComponent],
+  imports: [DashboardHeaderComponent, LucideAngularModule, AppCardComponent, AppButtonComponent, ReactiveFormsModule, AppModalFormComponent, DatePipe, AppPaginationComponent, FieldErrorComponent],
   providers: [
     {
       provide: LUCIDE_ICONS,
@@ -110,6 +125,7 @@ interface CompanyDetail {
         Upload,
         UserCheck,
         Users,
+        X,
       }),
     },
   ],
@@ -117,8 +133,76 @@ interface CompanyDetail {
   styleUrl: './hr-dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HrDashboardComponent {
+export class HrDashboardComponent implements OnInit {
+  private readonly authService = inject(AuthService);
+  private readonly companyService = inject(CompanyService);
+  private readonly toastService = inject(ToastService);
+  private readonly fb = inject(FormBuilder);
+  private readonly fileService = inject(FileService);
+  private readonly resumeService = inject(ResumeService);
+  private readonly skillService = inject(SkillService);
+  private readonly jobService = inject(JobService);
+
+
+  readonly company = signal<any>(null);
+  readonly skillList = signal<any[]>([]);
   readonly activeFrame = signal<HrDashboardFrameId>('overview');
+  readonly isUploadingLogo = signal<boolean>(false);
+  readonly logoPreviewUrl = signal<string | null>(null);
+  readonly isApplyModalOpen = signal(false);
+  private readonly http = inject(HttpClient);
+  private readonly sanitizer = inject(DomSanitizer);
+  // Quản lý trạng thái mở/đóng modal xem CV
+  readonly isCvPreviewOpen = signal(false);
+  readonly selectedApplicantName = signal('');
+  readonly isLoadingCv = signal(false);
+  readonly isPdf = signal(false);
+  readonly pdfUrl = signal<SafeResourceUrl | null>(null);
+  private currentBlobUrl: string | null = null;
+
+  readonly jobs = signal<any[]>([]);
+  readonly currentPage = signal(1);
+  readonly pageSize = signal(10);
+  readonly totalPages = signal(1);
+  readonly totalItems = signal(0);
+
+  readonly isJobModalOpen = signal(false);
+  readonly isEditMode = signal(false);
+
+  readonly jobModalForm = this.fb.group({
+    id: [null as number | null],
+    name: ['', Validators.required],
+    location: ['', Validators.required],
+    salary: [null as number | null, [Validators.required, Validators.min(0)]],
+    quantity: [null as number | null, [Validators.required, Validators.min(1)]],
+    level: ['INTERN', Validators.required],
+    description: ['', Validators.required],
+    skills: [[] as number[], Validators.required],
+    startDate: ['', Validators.required],
+    endDate: ['', Validators.required],
+  });
+
+  readonly companyForm = this.fb.group({
+    name: ['', Validators.required],
+    industry: ['', Validators.required],
+    companySize: [null as number | null, [Validators.required, Validators.min(1)]],
+    founded: [null as number | null, [Validators.required, Validators.min(1800)]],
+    address: ['', Validators.required],
+    description: [''],
+    logo: ['']
+  });
+
+  readonly jobPostForm = this.fb.group({
+    name: ['', Validators.required],
+    location: ['', Validators.required],
+    salary: [null as number | null, [Validators.required, Validators.min(0)]],
+    quantity: [null as number | null, [Validators.required, Validators.min(1)]],
+    level: ['INTERN', Validators.required],
+    description: ['', Validators.required],
+    skills: [[] as number[], Validators.required], // Chứa danh sách các id của skill được chọn
+    startDate: ['', Validators.required],
+    endDate: ['', Validators.required],
+  });
 
   readonly dashboardNavigation: readonly HrDashboardNavItem[] = [
     {
@@ -158,17 +242,16 @@ export class HrDashboardComponent {
     },
   ];
 
-  readonly overviewStats: readonly HrStatCard[] = [
-    { label: 'Active Jobs', value: '3', helper: 'Total: 5 jobs', icon: 'briefcase-business' },
-    { label: 'Total Applicants', value: '105', helper: '+12 from last week', icon: 'users' },
-    { label: 'Profile Views', value: '2,980', helper: 'This month', icon: 'eye' },
-  ];
+  readonly overviewStats = computed<readonly HrStatCard[]>(() => {
+    const jobsCount = this.jobs().length;
+    const applicantsCount = this.applicants().length;
+    return [
+      { label: 'Active Jobs', value: String(jobsCount), helper: `Total: ${jobsCount} jobs`, icon: 'briefcase-business' },
+      { label: 'Total Applicants', value: String(applicantsCount), helper: `Total: ${applicantsCount} applicants`, icon: 'users' },
+    ];
+  });
 
-  readonly recentApplications: readonly RecentApplication[] = [
-    { name: 'Sarah Johnson', role: 'Senior Frontend Developer', time: '1 hour ago' },
-    { name: 'Michael Chen', role: 'Senior Frontend Developer', time: '3 hours ago' },
-    { name: 'Emily Davis', role: 'Product Manager', time: '1 day ago' },
-  ];
+
 
   readonly jobPostings: readonly JobPosting[] = [
     {
@@ -213,44 +296,8 @@ export class HrDashboardComponent {
     },
   ];
 
-  readonly applicants: readonly Applicant[] = [
-    {
-      name: 'Sarah Johnson',
-      role: 'Senior Frontend Developer',
-      location: 'San Francisco, CA',
-      stage: 'Interview',
-      stageClass: 'status-badge--purple',
-      score: '94%',
-      applied: '1 hour ago',
-    },
-    {
-      name: 'Michael Chen',
-      role: 'Senior Frontend Developer',
-      location: 'Remote',
-      stage: 'Under Review',
-      stageClass: 'status-badge--blue',
-      score: '88%',
-      applied: '3 hours ago',
-    },
-    {
-      name: 'Emily Davis',
-      role: 'Product Manager',
-      location: 'New York, NY',
-      stage: 'New',
-      stageClass: 'status-badge--green',
-      score: '82%',
-      applied: '1 day ago',
-    },
-    {
-      name: 'David Kim',
-      role: 'UX Designer',
-      location: 'Los Angeles, CA',
-      stage: 'Rejected',
-      stageClass: 'status-badge--red',
-      score: '64%',
-      applied: '2 days ago',
-    },
-  ];
+  readonly applicants = signal<any[]>([]);
+
 
   readonly companyDetails: readonly CompanyDetail[] = [
     { label: 'Company', value: 'TechCorp Inc.', icon: 'building-2' },
@@ -261,6 +308,14 @@ export class HrDashboardComponent {
     { label: 'Verified', value: 'Employer account approved', icon: 'shield-check' },
   ];
 
+  readonly companyLogoUrl = computed(() => {
+    const comp = this.company();
+    if (comp && comp.logo) {
+      return `${API_ENDPOINTS.companies.logoBase}${comp.logo}`;
+    }
+    return null;
+  });
+
   readonly benefits: readonly string[] = [
     'Hybrid work policy',
     'Health insurance',
@@ -268,11 +323,559 @@ export class HrDashboardComponent {
     'Annual performance bonus',
   ];
 
+  readonly editCompanyFields: readonly ModalFormField[] = [
+    { key: 'name', label: 'Company Name', type: 'text', required: true },
+    { key: 'industry', label: 'Industry', type: 'text', required: true },
+    { key: 'companySize', label: 'Company Size', type: 'text', required: true },
+    { key: 'founded', label: 'Founded Year', type: 'text', required: true },
+    { key: 'address', label: 'Address', type: 'text', required: true },
+    { key: 'description', label: 'Company Description', type: 'textarea', required: false },
+    {
+      key: 'logo',
+      label: 'Company Logo',
+      type: 'file',
+      required: false,
+      accept: 'image/*',
+      maxFileSizeMb: 2,
+      hint: 'Upload JPG, PNG image (max 2MB)',
+      uploadHandler: (file) => this.fileService.upload(file) // Tận dụng upload tự động của modal-form
+    }
+  ];
+
+
+  ngOnInit(): void {
+    if (typeof window === 'undefined' || !window.localStorage.getItem('accessToken')) {
+      return;
+    }
+
+    this.loadJobs();
+    this.loadApplicants();
+
+    this.skillService.getAll().subscribe({
+      next: (res) => {
+        // Case when API returns format { data: [...] } or array directly
+        const data = res?.data.result || res || [];
+        this.skillList.set(data);
+      },
+      error: (err) => {
+        console.error('Error loading skills list:', err);
+      }
+    });
+    this.authService.getAccount().subscribe({
+      next: (account) => {
+        if (account && account.company) {
+          // 1. Gọi tiếp API lấy thông tin chi tiết công ty bằng company.id
+          this.companyService.getById(account.company.id).subscribe({
+            next: (companyDetail) => {
+              // Lưu chi tiết công ty (bao gồm cả trường logo) vào signal
+              this.company.set(companyDetail);
+
+              // 2. Load dữ liệu chi tiết vào form
+              this.companyForm.patchValue({
+                name: companyDetail.name,
+                industry: companyDetail.industry,
+                companySize: companyDetail.companySize,
+                founded: companyDetail.founded,
+                address: companyDetail.address,
+                description: companyDetail.description
+              });
+            },
+            error: (err) => {
+              console.error('Error getting company details:', err);
+            }
+          });
+        } else {
+          this.company.set(null);
+          this.selectFrame('company-profile');// Not linked to a company yet
+        }
+      },
+      error: (err) => {
+        console.error('Error loading account info:', err);
+      }
+    });
+  }
+
   selectFrame(frame: HrDashboardFrameId): void {
     this.activeFrame.set(frame);
+    if (frame === 'applicants') {
+      this.loadApplicants();
+    } else if (frame === 'my-jobs') {
+      this.loadJobs();
+    }
   }
 
   isActive(frame: HrDashboardFrameId): boolean {
     return this.activeFrame() === frame;
+  }
+
+  onCreateCompanySubmit(): void {
+    if (this.companyForm.invalid) {
+      this.companyForm.markAllAsTouched();
+      return;
+    }
+    this.companyService.createCompany(this.companyForm.value as CompanyApi).subscribe({
+      next: (newCompany) => {
+        // Gán công ty mới tạo vào signal để giao diện chuyển sang chế độ hiển thị profile
+        this.company.set(newCompany);
+        this.companyForm.reset();
+        this.toastService.success('Company created successfully');
+      },
+      error: (err) => {
+        console.error('Error creating company:', err);
+      }
+    });
+  }
+
+  onLogoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+    const file = input.files[0];
+
+    // 1. Bật trạng thái đang tải lên
+    this.isUploadingLogo.set(true);
+    // 2. Gọi service upload file
+    this.fileService.upload(file).subscribe({
+      next: (fileName) => {
+        // Cập nhật tên file (ví dụ: "abc.png") vào formControl 'logo'
+        this.companyForm.patchValue({ logo: fileName });
+        // Tạo preview URL để hiển thị ảnh vừa upload lên giao diện
+        this.logoPreviewUrl.set(`${API_ENDPOINTS.companies.logoBase}${fileName}`);
+        this.isUploadingLogo.set(false);
+        this.toastService.success('Logo uploaded successfully');
+      },
+      error: (err) => {
+        this.isUploadingLogo.set(false);
+        this.toastService.error('An error occurred during upload');
+        console.error('Logo upload error:', err);
+      }
+    });
+  }
+
+  // Mở modal
+  onEditCompany(): void {
+    this.isApplyModalOpen.set(true);
+  }
+  // Đóng modal
+  onCloseModal(): void {
+    this.isApplyModalOpen.set(false);
+  }
+
+  onEditCompanySubmit(event: ModalFormSubmitEvent): void {
+    const currentCompany = this.company();
+    if (!currentCompany) return;
+    // Nếu có logo mới tải lên thì lấy logo mới, nếu không thì giữ logo cũ
+    const uploadedLogo = event.uploadedFiles['logo'] || currentCompany.logo;
+    const updatedData: CompanyApi = {
+      id: currentCompany.id,
+      name: event.values['name'] as string,
+      industry: event.values['industry'] as string,
+      companySize: Number(event.values['companySize']),
+      founded: Number(event.values['founded']),
+      address: event.values['address'] as string,
+      description: event.values['description'] as string,
+      logo: uploadedLogo
+    };
+    // Gọi API update qua CompanyService
+    this.companyService.editCompany(updatedData).subscribe({
+      next: () => {
+        // Cập nhật lại signal company để giao diện tự cập nhật thông tin mới
+        this.company.set(updatedData);
+
+        this.isApplyModalOpen.set(false);
+        this.toastService.success('Company profile updated successfully');
+      },
+      error: (err) => {
+        console.error('Error updating company:', err);
+        this.toastService.error('Update failed');
+      }
+    });
+  }
+
+  loadApplicants(): void {
+    this.resumeService.getByHr(0, 10).subscribe({
+      next: (res) => {
+        if (res && res.data && res.data.result) {
+          this.applicants.set(res.data.result);
+        }
+      },
+      error: (err) => {
+        console.error('Error getting applicants list:', err);
+        this.toastService.error('Unable to load applicants list');
+      }
+    });
+  }
+
+  onStatusChange(applicant: any, event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const newStatus = selectElement.value;
+    this.resumeService.update({ id: applicant.id, status: newStatus }).subscribe({
+      next: () => {
+        this.toastService.success('Status updated successfully');
+        this.applicants.update(list =>
+          list.map(item => item.id === applicant.id ? { ...item, status: newStatus } : item)
+        );
+      },
+      error: (err) => {
+        this.toastService.error('Update failed');
+      }
+    });
+  }
+  viewResume(applicant: any): void {
+    if (!applicant || !applicant.url) {
+      this.toastService.warning('Applicant has not attached a CV file.');
+      return;
+    }
+
+    if (this.currentBlobUrl) {
+      URL.revokeObjectURL(this.currentBlobUrl);
+      this.currentBlobUrl = null;
+    }
+    this.pdfUrl.set(null);
+
+    const isPdfFile = applicant.url.toLowerCase().endsWith('.pdf');
+    this.isPdf.set(isPdfFile);
+
+    this.selectedApplicantName.set(applicant.user?.name || 'Applicant');
+    this.isCvPreviewOpen.set(true);
+    this.isLoadingCv.set(true);
+
+    const fileUrl = `${API_ENDPOINTS.companies.logoBase}${applicant.url}`;
+
+    // Tải file dưới dạng Blob từ backend
+    this.http.get(fileUrl, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        this.isLoadingCv.set(false);
+        if (isPdfFile) {
+          this.currentBlobUrl = URL.createObjectURL(blob);
+          this.pdfUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(this.currentBlobUrl));
+        } else {
+          // Đợi Angular render xong DOM modal
+          setTimeout(() => {
+            const container = document.getElementById('docx-preview-container');
+            if (container) {
+              container.innerHTML = ''; // Reset container
+              // Gọi thư viện để vẽ file Word vào div container
+              renderAsync(blob, container)
+                .then(() => console.log('Rendered Word file successfully'))
+                .catch(err => {
+                  console.error('Render error:', err);
+                  this.toastService.error('Cannot display this file format.');
+                });
+            }
+          }, 100);
+        }
+      },
+      error: (err) => {
+        this.isLoadingCv.set(false);
+        this.isCvPreviewOpen.set(false);
+        console.error('Error loading CV file:', err);
+        this.toastService.error('Unable to load CV file from server.');
+      }
+    });
+  }
+
+  closeCvPreview(): void {
+    this.isCvPreviewOpen.set(false);
+    if (this.currentBlobUrl) {
+      URL.revokeObjectURL(this.currentBlobUrl);
+      this.currentBlobUrl = null;
+    }
+    this.pdfUrl.set(null);
+  }
+
+  sendEmail(applicant: any): void {
+    console.log('Sending email to applicant:', applicant.email);
+    // API send email will be implemented later
+  }
+
+  onSubmitJob(): void {
+    if (this.jobPostForm.invalid) {
+      this.jobPostForm.markAllAsTouched();
+      this.toastService.warning('Please fill in all required fields');
+      return;
+    }
+
+    const currentCompany = this.company();
+    if (!currentCompany) {
+      this.toastService.error('Recruiter account is not linked to a company!');
+      return;
+    }
+
+    const formValues = this.jobPostForm.value;
+
+    // Map list ID sang list object [{ id: X }]
+    const skillsPayload = (formValues.skills || []).map((id: number) => ({ id }));
+
+    // Tạo request payload khớp với mock yêu cầu
+    const payload = {
+      name: formValues.name,
+      location: formValues.location,
+      salary: Number(formValues.salary),
+      quantity: Number(formValues.quantity),
+      level: formValues.level,
+      description: formValues.description,
+      startDate: this.toInstantString(formValues.startDate),
+      endDate: this.toInstantString(formValues.endDate),
+      company: {
+        id: currentCompany.id
+      },
+      skills: skillsPayload
+    };
+
+    // Gọi API tạo job
+    this.jobService.create(payload).subscribe({
+      next: (newJob) => {
+        this.toastService.success('Job posted successfully!');
+        this.jobPostForm.reset({ level: 'INTERN' }); // Reset form to default
+        this.selectFrame('my-jobs'); // Redirect to Job list tab
+      },
+      error: (err: void) => {
+        console.error('Error posting job:', err);
+        this.toastService.error('Failed to post job');
+      }
+    });
+  }
+
+  // 1. Lấy danh sách Skill đã được chọn dựa trên mảng ID lưu trong Form
+  getSelectedSkills(): any[] {
+    const selectedIds = this.jobPostForm.get('skills')?.value || [];
+    return this.skillList().filter(s => selectedIds.includes(s.id));
+  }
+
+  // 2. Lấy danh sách các Skill chưa được chọn để hiển thị trong Dropdown (Tránh trùng lặp)
+  getAvailableSkills(): any[] {
+    const selectedIds = this.jobPostForm.get('skills')?.value || [];
+    return this.skillList().filter(s => !selectedIds.includes(s.id));
+  }
+
+  // 3. Xử lý khi click chọn 1 skill từ dropdown
+  addSkill(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const skillId = Number(selectElement.value);
+    if (!skillId) return;
+
+    const currentSelected = this.jobPostForm.get('skills')?.value || [];
+    if (!currentSelected.includes(skillId)) {
+      this.jobPostForm.patchValue({
+        skills: [...currentSelected, skillId]
+      });
+    }
+
+    // Reset dropdown về placeholder ban đầu
+    selectElement.value = '';
+  }
+
+  // 4. Xử lý khi click vào nút 'x' để xóa tag skill
+  removeSkill(skillId: number): void {
+    const currentSelected = this.jobPostForm.get('skills')?.value || [];
+    const updatedSelected = currentSelected.filter((id: number) => id !== skillId);
+    this.jobPostForm.patchValue({
+      skills: updatedSelected
+    });
+  }
+
+  loadJobs(): void {
+    this.jobService.getByHr(this.currentPage(), this.pageSize()).subscribe({
+      next: (res) => {
+        const data = res?.data?.result || res || [];
+        this.jobs.set(data);
+        const meta = res?.data?.meta;
+        if (meta) {
+          this.totalPages.set(meta.pages || 1);
+          this.totalItems.set(meta.total || 0);
+        }
+      },
+      error: (err) => {
+        console.error('Error loading jobs list:', err);
+        this.toastService.error('Unable to load jobs list');
+      }
+    });
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage.set(page);
+    this.loadJobs();
+  }
+
+  viewJobDetail(id: number): void {
+    this.isEditMode.set(false);
+    this.jobService.getById(id).subscribe({
+      next: (jobDetail) => {
+        const skillsData = (jobDetail as any).skills || jobDetail.skill || [];
+        const skillIds = skillsData.map((s: any) => {
+          if (typeof s === 'string') {
+            const found = this.skillList().find(sk => sk.name === s);
+            return found ? found.id : null;
+          }
+          return s.id;
+        }).filter((id: number | null): id is number => id !== null);
+        this.jobModalForm.patchValue({
+          id: jobDetail.id,
+          name: jobDetail.name,
+          location: jobDetail.location,
+          salary: jobDetail.salary,
+          quantity: jobDetail.quantity,
+          level: jobDetail.level,
+          description: jobDetail.description,
+          skills: skillIds,
+          startDate: this.formatDateForInput(jobDetail.startDate),
+          endDate: this.formatDateForInput(jobDetail.endDate)
+        });
+        this.jobModalForm.disable();
+        this.isJobModalOpen.set(true);
+      },
+      error: (err) => {
+        console.error('Error getting job details:', err);
+        this.toastService.error('Unable to load job details');
+      }
+    });
+  }
+
+  editJobDetail(id: number): void {
+    this.isEditMode.set(true);
+    this.jobService.getById(id).subscribe({
+      next: (jobDetail) => {
+        const skillsData = (jobDetail as any).skills || jobDetail.skill || [];
+        const skillIds = skillsData.map((s: any) => {
+          if (typeof s === 'string') {
+            const found = this.skillList().find(sk => sk.name === s);
+            return found ? found.id : null;
+          }
+          return s.id;
+        }).filter((id: number | null): id is number => id !== null);
+        this.jobModalForm.patchValue({
+          id: jobDetail.id,
+          name: jobDetail.name,
+          location: jobDetail.location,
+          salary: jobDetail.salary,
+          quantity: jobDetail.quantity,
+          level: jobDetail.level,
+          description: jobDetail.description,
+          skills: skillIds,
+          startDate: this.formatDateForInput(jobDetail.startDate),
+          endDate: this.formatDateForInput(jobDetail.endDate)
+        });
+        this.jobModalForm.enable();
+        this.isJobModalOpen.set(true);
+      },
+      error: (err) => {
+        console.error('Error getting job details:', err);
+        this.toastService.error('Unable to load job details');
+      }
+    });
+  }
+
+  onCloseJobModal(): void {
+    this.isJobModalOpen.set(false);
+  }
+
+  onSubmitModalJob(): void {
+    if (this.jobModalForm.invalid) {
+      this.jobModalForm.markAllAsTouched();
+      this.toastService.warning('Please fill in all required fields');
+      return;
+    }
+
+    const currentCompany = this.company();
+    if (!currentCompany) {
+      this.toastService.error('Recruiter account is not linked to a company!');
+      return;
+    }
+
+    const formValues = this.jobModalForm.getRawValue();
+    const skillsPayload = (formValues.skills || []).map((id: number) => ({ id }));
+
+    const payload = {
+      id: formValues.id,
+      name: formValues.name,
+      location: formValues.location,
+      salary: Number(formValues.salary),
+      quantity: Number(formValues.quantity),
+      level: formValues.level,
+      description: formValues.description,
+      startDate: this.toInstantString(formValues.startDate),
+      endDate: this.toInstantString(formValues.endDate),
+      company: {
+        id: currentCompany.id
+      },
+      skills: skillsPayload
+    };
+
+    this.jobService.update(payload).subscribe({
+      next: () => {
+        this.toastService.success('Job posting updated successfully!');
+        this.isJobModalOpen.set(false);
+        this.loadJobs();
+      },
+      error: (err) => {
+        console.error('Error updating job posting:', err);
+        this.toastService.error('Failed to update job posting');
+      }
+    });
+  }
+
+  getSelectedSkillsForModal(): any[] {
+    const selectedIds = this.jobModalForm.get('skills')?.value || [];
+    return this.skillList().filter(s => selectedIds.includes(s.id));
+  }
+
+  getAvailableSkillsForModal(): any[] {
+    const selectedIds = this.jobModalForm.get('skills')?.value || [];
+    return this.skillList().filter(s => !selectedIds.includes(s.id));
+  }
+
+  addSkillToModal(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const skillId = Number(selectElement.value);
+    if (!skillId) return;
+
+    const currentSelected = this.jobModalForm.get('skills')?.value || [];
+    if (!currentSelected.includes(skillId)) {
+      this.jobModalForm.patchValue({
+        skills: [...currentSelected, skillId]
+      });
+    }
+    selectElement.value = '';
+  }
+
+  removeSkillFromModal(skillId: number): void {
+    const currentSelected = this.jobModalForm.get('skills')?.value || [];
+    const updatedSelected = currentSelected.filter((id: number) => id !== skillId);
+    this.jobModalForm.patchValue({
+      skills: updatedSelected
+    });
+  }
+
+  private formatDateForInput(dateStr: string): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    const month = '' + (d.getMonth() + 1);
+    const day = '' + d.getDate();
+    const year = d.getFullYear();
+    return [year, month.padStart(2, '0'), day.padStart(2, '0')].join('-');
+  }
+
+  private toInstantString(dateStr: string | null | undefined): string | null {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? null : d.toISOString();
+  }
+
+  onDeleteJob(id: number): void {
+    if (confirm('Are you sure you want to delete this job posting?')) {
+      this.jobService.delete(id).subscribe({
+        next: () => {
+          this.toastService.success('Job posting deleted successfully!');
+          this.loadJobs();
+        },
+        error: (err: unknown) => {
+          console.error('Error deleting job posting:', err);
+          this.toastService.error('Failed to delete job posting');
+        }
+      });
+    }
   }
 }

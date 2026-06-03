@@ -2,14 +2,9 @@
   <header class="job-card__header">
     <div class="job-card__logo" aria-hidden="true">
       @if (job.logoUrl && !logoLoadFailed) {
-        <img
-          class="job-card__logo-image"
-          [src]="job.logoUrl"
-          [alt]="job.company + ' logo'"
-          (error)="onLogoError()"
-        />
+      <img class="job-card__logo-image" [src]="job.logoUrl" [alt]="job.company + ' logo'" (error)="onLogoError()" />
       } @else {
-        {{ job.initials }}
+      {{ job.initials }}
       }
     </div>
 
@@ -19,14 +14,14 @@
     </div>
 
     @if (appearance === 'search') {
-      <button class="job-card__bookmark" type="button" aria-label="Save job">
-        <i-lucide class="job-card__bookmark-icon" name="bookmark" aria-hidden="true" />
-      </button>
+    <button class="job-card__bookmark" type="button" aria-label="Save job">
+      <i-lucide class="job-card__bookmark-icon" name="bookmark" aria-hidden="true" />
+    </button>
     }
   </header>
 
   @if (appearance === 'search' && job.description) {
-    <p class="job-card__description">{{ job.description }}</p>
+  <p class="job-card__description">{{ job.description }}</p>
   }
 
   <div class="job-card__body">
@@ -41,35 +36,40 @@
     </div>
 
     @if (appearance === 'search') {
-      <div class="job-card__detail">
-        <i-lucide class="job-card__detail-icon" name="clock" aria-hidden="true" />
-        <span>{{ job.timePosted }}</span>
-      </div>
+    <div class="job-card__detail">
+      <i-lucide class="job-card__detail-icon" name="clock" aria-hidden="true" />
+      <span>{{ job.timePosted }}</span>
+    </div>
     }
   </div>
 
+  @if (job.skills?.length) {
+  <div class="job-card__skills">
+    @for (skill of job.skills; track skill) {
+    <app-badge variant="outline">{{ skill }}</app-badge>
+    }
+  </div>
+  }
+
   @if (appearance === 'featured') {
-    <div class="job-card__meta">
-      <app-badge>{{ job.type }}</app-badge>
-      <span class="job-card__time">
-        <i-lucide class="job-card__time-icon" name="clock" aria-hidden="true" />
-        {{ job.timePosted }}
-      </span>
-    </div>
+  <div class="job-card__meta">
+    <app-badge>{{ job.type }}</app-badge>
+    <span class="job-card__time">
+      <i-lucide class="job-card__time-icon" name="clock" aria-hidden="true" />
+      {{ job.timePosted }}
+    </span>
+  </div>
   } @else if (job.tags?.length) {
-    <div class="job-card__tags">
-      @for (tag of job.tags; track tag) {
-        <app-badge variant="outline">{{ tag }}</app-badge>
-      }
-    </div>
+  <div class="job-card__tags">
+    @for (tag of job.tags; track tag) {
+    <app-badge variant="outline">{{ tag }}</app-badge>
+    }
+  </div>
   }
 
   <footer class="job-card__footer">
-    <app-button
-      [variant]="appearance === 'search' ? 'primary' : 'outline'"
-      [fullWidth]="true"
-      (buttonClick)="onViewDetails()"
-    >
+    <app-button [variant]="appearance === 'search' ? 'primary' : 'outline'" [fullWidth]="true"
+      (buttonClick)="onViewDetails()">
       View Details
     </app-button>
   </footer>

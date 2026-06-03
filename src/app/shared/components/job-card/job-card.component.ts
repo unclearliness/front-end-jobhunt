@@ -23,6 +23,7 @@ export interface JobCardData {
   readonly timePosted: string;
   readonly description?: string;
   readonly tags?: readonly string[];
+  readonly skills?: readonly any[];
 }
 
 type JobCardAppearance = 'featured' | 'search';

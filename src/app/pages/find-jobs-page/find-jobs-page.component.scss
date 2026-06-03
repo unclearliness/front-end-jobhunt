@@ -167,3 +167,17 @@
     gap: 16px;
   }
 }
+
+.no-data {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--muted-foreground);
+  font-size: 16px;
+  text-align: center;
+}

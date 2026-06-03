@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Location } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
@@ -74,6 +75,12 @@ const INITIAL_STATE: CompanyDetailState = {
 export class CompanyDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly companyService = inject(CompanyService);
+  private readonly location = inject(Location);
+
+  onBack(event: Event): void {
+    event.preventDefault();
+    this.location.back();
+  }
 
   readonly detailState = toSignal(
     this.route.paramMap.pipe(

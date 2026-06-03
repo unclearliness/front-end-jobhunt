@@ -29,7 +29,7 @@ import {
 import { finalize, Observable } from 'rxjs';
 import { AppButtonComponent } from '../app-button/app-button.component';
 
-export type ModalFormFieldType = 'text' | 'email' | 'textarea' | 'file';
+export type ModalFormFieldType = 'text' | 'email' | 'textarea' | 'file' | 'select' | 'password';
 
 export interface ModalFormField {
   readonly key: string;
@@ -43,6 +43,8 @@ export interface ModalFormField {
   readonly maxFileSizeMb?: number;
   readonly validators?: readonly ValidatorFn[];
   readonly uploadHandler?: (file: File) => Observable<string>;
+  readonly options?: readonly { value: any; label: string }[];
+  readonly disabled?: boolean;
 }
 
 export interface ModalFormSubmitEvent {
@@ -50,6 +52,7 @@ export interface ModalFormSubmitEvent {
   readonly files: Record<string, File | null>;
   readonly uploadedFiles: Record<string, string | null>;
 }
+
 
 @Component({
   selector: 'app-modal-form',
@@ -75,6 +78,7 @@ export class AppModalFormComponent implements OnChanges {
   @Input() cancelLabel = 'Cancel';
   @Input() fields: readonly ModalFormField[] = [];
   @Input() initialValues: Readonly<Record<string, unknown>> = {};
+  @Input() hideSubmit = false;
 
   @Output() closed = new EventEmitter<void>();
   @Input() submitAction?: (event: ModalFormSubmitEvent) => void;
@@ -92,6 +96,7 @@ export class AppModalFormComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['fields'] || changes['initialValues']) {
       this.rebuildForm();
+      this.initializeFileValues();
     }
 
     if (changes['open']?.currentValue === true) {
@@ -168,6 +173,10 @@ export class AppModalFormComponent implements OnChanges {
 
   onFileDragOver(event: DragEvent, fieldKey: string): void {
     event.preventDefault();
+    const field = this.fields.find((f) => f.key === fieldKey);
+    if (field?.disabled) {
+      return;
+    }
     this.dragOverFieldKey.set(fieldKey);
   }
 
@@ -179,12 +188,17 @@ export class AppModalFormComponent implements OnChanges {
   onFileDrop(event: DragEvent, field: ModalFormField): void {
     event.preventDefault();
     this.dragOverFieldKey.set(null);
-
+    if (field.disabled) {
+      return;
+    }
     const droppedFile = event.dataTransfer?.files?.item(0) ?? null;
     this.handleFileSelection(field, droppedFile);
   }
 
   onFileSelected(event: Event, field: ModalFormField): void {
+    if (field.disabled) {
+      return;
+    }
     const input = event.target as HTMLInputElement;
     const selectedFile = input.files?.item(0) ?? null;
 
@@ -259,7 +273,10 @@ export class AppModalFormComponent implements OnChanges {
       const initialValue =
         field.type === 'file' ? null : (this.initialValues[field.key] ?? '');
 
-      controls[field.key] = new FormControl(initialValue, { validators });
+      controls[field.key] = new FormControl(
+        { value: initialValue, disabled: !!field.disabled },
+        { validators }
+      );
     }
 
     this.form = this.formBuilder.group(controls);
@@ -269,10 +286,24 @@ export class AppModalFormComponent implements OnChanges {
     this.submitAttempted = false;
     this.dragOverFieldKey.set(null);
     this.fileErrorMessages.set({});
-    this.fileNames.set({});
-    this.uploadedFileValues.set({});
+    this.initializeFileValues();
     this.uploadingFieldKeys.set({});
     this.form.reset(this.buildResetValues());
+  }
+
+  private initializeFileValues(): void {
+    const initialFileValues: Record<string, string> = {};
+    const initialFileNames: Record<string, string> = {};
+    for (const field of this.fields) {
+      if (field.type === 'file' && typeof this.initialValues[field.key] === 'string' && this.initialValues[field.key]) {
+        const val = this.initialValues[field.key] as string;
+        initialFileValues[field.key] = val;
+        const parts = val.split('/');
+        initialFileNames[field.key] = parts[parts.length - 1];
+      }
+    }
+    this.fileNames.set(initialFileNames);
+    this.uploadedFileValues.set(initialFileValues);
   }
 
   private buildResetValues(): Record<string, unknown> {
