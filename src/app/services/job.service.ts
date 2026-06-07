@@ -75,9 +75,23 @@ export class JobService {
     );
   }
 
-  getByHr(page = 1, size = 10): Observable<any> {
+  getByCompany(companyId: number, page = 1, size = 10, filter?: string): Observable<any> {
+    const params: any = { page, size };
+    if (filter) {
+      params.filter = filter;
+    }
+    return this.http.get<any>(API_ENDPOINTS.jobs.byCompany(companyId), {
+      params,
+    });
+  }
+
+  getByHr(page = 1, size = 10, filter?: string): Observable<any> {
+    const params: any = { page, size };
+    if (filter) {
+      params.filter = filter;
+    }
     return this.http.get<any>(API_ENDPOINTS.jobs.byHr, {
-      params: { page, size },
+      params,
     });
   }
 

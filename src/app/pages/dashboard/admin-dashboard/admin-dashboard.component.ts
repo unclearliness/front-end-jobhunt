@@ -30,14 +30,14 @@ import { API_ENDPOINTS } from '../../../shared/constants/api-endpoints';
 import { AppPaginationComponent } from "../../../shared/components/app-pagination/app-pagination.component";
 import { CompanyService } from '../../../services/company.service';
 import { JobService } from '../../../services/job.service';
+import { SkillService } from '../../../services/skill.service';
 
 type AdminFrameId =
   | 'overview'
   | 'users'
   | 'companies'
   | 'job-postings'
-  | 'roles'
-  | 'permissions';
+  | 'skills';
 
 interface AdminNavItem {
   readonly id: AdminFrameId;
@@ -141,6 +141,7 @@ export class AdminDashboardComponent implements OnInit {
   private readonly companyService = inject(CompanyService);
   private readonly jobService = inject(JobService);
   private readonly toastService = inject(ToastService);
+  private readonly skillService = inject(SkillService);
   readonly isAddUserModalOpen = signal(false);
   readonly activeFrame = signal<AdminFrameId>('overview');
 
@@ -148,6 +149,7 @@ export class AdminDashboardComponent implements OnInit {
     this.loadUsers();
     this.loadCompanies();
     this.loadJobs();
+    this.loadSkills();
   }
 
   readonly dashboardNavigation: readonly AdminNavItem[] = [
@@ -180,18 +182,11 @@ export class AdminDashboardComponent implements OnInit {
       frameId: 'frame-admin-job-postings',
     },
     {
-      id: 'roles',
-      label: 'Roles',
-      icon: 'user-check',
-      buttonId: 'button-admin-roles',
-      frameId: 'frame-admin-roles',
-    },
-    {
-      id: 'permissions',
-      label: 'Permissions',
-      icon: 'shield-check',
-      buttonId: 'button-admin-permissions',
-      frameId: 'frame-admin-permissions',
+      id: 'skills',
+      label: 'Skills',
+      icon: 'clipboard-list',
+      buttonId: 'button-admin-skills',
+      frameId: 'frame-admin-skills',
     },
   ];
 
@@ -219,53 +214,23 @@ export class AdminDashboardComponent implements OnInit {
   readonly jobTotalItems = signal(0);
   readonly jobSearchQuery = signal<string>('');
 
-  readonly roles: readonly RoleRow[] = [
-    {
-      name: 'Admin',
-      description: 'Full platform management and security controls',
-      users: '8',
-      permissions: '24',
-    },
-    {
-      name: 'HR',
-      description: 'Manage companies, job postings, and applicants',
-      users: '4,521',
-      permissions: '12',
-    },
-    {
-      name: 'User',
-      description: 'Browse jobs, save jobs, and submit applications',
-      users: '85,234',
-      permissions: '7',
-    },
-  ];
-
-  readonly permissions: readonly PermissionGroup[] = [
-    {
-      name: 'User Management',
-      description: 'Create, edit, suspend, and verify user accounts',
-      enabled: true,
-    },
-    {
-      name: 'Company Moderation',
-      description: 'Approve company profiles and employer verification requests',
-      enabled: true,
-    },
-    {
-      name: 'Job Posting Review',
-      description: 'Review, publish, flag, or remove job postings',
-      enabled: true,
-    },
-    {
-      name: 'Role Assignment',
-      description: 'Assign admin, HR, and user roles across the platform',
-      enabled: false,
-    },
-  ];
-
   readonly searchQuery = signal<string>('');
+  readonly skills = signal<any[]>([]);
+  readonly skillCurrentPage = signal(1);
+  readonly skillPageSize = signal(10);
+  readonly skillTotalPages = signal(1);
+  readonly skillTotalItems = signal(0);
+  readonly skillSearchQuery = signal<string>('');
 
-  readonly modalType = signal<'user' | 'company' | 'job'>('user');
+  readonly modalType = signal<'user' | 'company' | 'job' | 'skill'>('user');
+
+  readonly skillModalFields = computed<ModalFormField[]>(() => {
+    const mode = this.modalMode();
+    const isReadOnly = mode === 'view';
+    return [
+      { key: 'name', label: 'Skill Name', type: 'text', required: true, disabled: isReadOnly }
+    ];
+  });
 
   readonly userModalFields = computed<ModalFormField[]>(() => {
     const mode = this.modalMode();
@@ -367,6 +332,9 @@ export class AdminDashboardComponent implements OnInit {
     if (type === 'job') {
       return this.jobModalFields();
     }
+    if (type === 'skill') {
+      return this.skillModalFields();
+    }
     return this.userModalFields();
   });
 
@@ -379,13 +347,18 @@ export class AdminDashboardComponent implements OnInit {
     if (type === 'job') {
       return 'Job Details (Read-only)';
     }
+    if (type === 'skill') {
+      if (mode === 'add') return 'Add New Skill';
+      if (mode === 'edit') return 'Edit Skill Details';
+      return 'Skill Details (Read-only)';
+    }
     if (mode === 'add') return 'Add New User';
     if (mode === 'view') return 'User Details (Read-only)';
     return 'Edit User Details';
   });
 
   readonly modalSubmitLabel = computed(() =>
-    this.modalMode() === 'add' ? 'Create User' : 'Save Changes'
+    this.modalMode() === 'add' ? (this.modalType() === 'skill' ? 'Create Skill' : 'Create User') : 'Save Changes'
   );
 
   readonly modalHideSubmit = computed(() => {
@@ -414,10 +387,18 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   onSubmitModal(event: ModalFormSubmitEvent): void {
-    if (this.modalMode() === 'add') {
-      this.handleCreateUser(event);
-    } else if (this.modalMode() === 'edit') {
-      this.handleUpdateUser(event);
+    if (this.modalType() === 'skill') {
+      if (this.modalMode() === 'add') {
+        this.handleCreateSkill(event);
+      } else if (this.modalMode() === 'edit') {
+        this.handleUpdateSkill(event);
+      }
+    } else {
+      if (this.modalMode() === 'add') {
+        this.handleCreateUser(event);
+      } else if (this.modalMode() === 'edit') {
+        this.handleUpdateUser(event);
+      }
     }
   }
 
@@ -762,6 +743,110 @@ export class AdminDashboardComponent implements OnInit {
         }
       });
     }
+  }
+
+  loadSkills(): void {
+    const query = this.skillSearchQuery().trim();
+    const filter = query ? `name ~ '${query}'` : undefined;
+
+    this.skillService.searchPaginated(this.skillCurrentPage(), this.skillPageSize(), filter).subscribe({
+      next: (res) => {
+        const data = res?.data?.result || res?.data || res || [];
+        this.skills.set(data);
+
+        const meta = res?.data?.meta;
+        if (meta) {
+          this.skillTotalPages.set(meta.pages || 1);
+          this.skillTotalItems.set(meta.total || 0);
+        }
+      },
+      error: (err: unknown) => {
+        console.error('Error loading skills:', err);
+        this.toastService.error('Unable to load skills list');
+      }
+    });
+  }
+
+  onOpenAddSkill(): void {
+    this.modalType.set('skill');
+    this.modalMode.set('add');
+    this.modalInitialValues.set({});
+    this.isModalOpen.set(true);
+  }
+
+  onOpenEditSkill(skill: any): void {
+    this.modalType.set('skill');
+    this.modalMode.set('edit');
+    this.modalInitialValues.set({
+      id: skill.id,
+      name: skill.name
+    });
+    this.isModalOpen.set(true);
+  }
+
+  onDeleteSkill(id: number): void {
+    if (confirm('Are you sure you want to delete this skill?')) {
+      this.skillService.delete(id).subscribe({
+        next: () => {
+          this.toastService.success('Skill deleted successfully!');
+          this.loadSkills();
+        },
+        error: (err: unknown) => {
+          console.error('Error deleting skill:', err);
+          this.toastService.error('Failed to delete skill');
+        }
+      });
+    }
+  }
+
+  onSearchSkills(keyword: string): void {
+    this.skillSearchQuery.set(keyword);
+    this.skillCurrentPage.set(1);
+    this.loadSkills();
+  }
+
+  onSkillPageChange(page: number): void {
+    this.skillCurrentPage.set(page);
+    this.loadSkills();
+  }
+
+  private handleCreateSkill(event: ModalFormSubmitEvent): void {
+    const payload = {
+      name: event.values['name'] as string
+    };
+
+    this.skillService.create(payload).subscribe({
+      next: () => {
+        this.toastService.success('Skill added successfully!');
+        this.isModalOpen.set(false);
+        this.loadSkills();
+      },
+      error: (err: unknown) => {
+        console.error('Error adding skill:', err);
+        this.toastService.error('Failed to add skill');
+      }
+    });
+  }
+
+  private handleUpdateSkill(event: ModalFormSubmitEvent): void {
+    const currentSkill = this.modalInitialValues();
+
+    const payload = {
+      id: currentSkill.id,
+      name: event.values['name'] as string
+    };
+
+    this.skillService.update(payload).subscribe({
+      next: () => {
+        this.toastService.success('Skill updated successfully!');
+        this.isModalOpen.set(false);
+        this.loadSkills();
+      },
+      error: (err: unknown) => {
+        console.error('Error updating skill:', err);
+        this.toastService.error('Failed to update skill');
+      }
+    });
   }
 
   private getInitials(name: string): string {

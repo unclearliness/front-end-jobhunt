@@ -42,6 +42,7 @@ import { UserService } from '../../../services/user.service';
 import { AppModalFormComponent, ModalFormField, ModalFormSubmitEvent } from '../../../shared/components/app-modal-form/app-modal-form.component';
 import { ToastService } from '../../../services/toast.service';
 import { FileService } from '../../../services/file.service';
+import { ResumeService } from '../../../services/resume.service';
 
 type DashboardFrameId =
   | 'overview'
@@ -188,8 +189,34 @@ export class UserDashboardComponent implements OnInit {
   private readonly jobService = inject(JobService);
   private readonly userService = inject(UserService);
   private readonly toastService = inject(ToastService);
+  private readonly resumeService = inject(ResumeService);
 
   readonly isApplyModalOpen = signal(false);
+  readonly isEditResumeModalOpen = signal(false);
+  readonly editingResumeId = signal<number | null>(null);
+  readonly editingResumeOldUrl = signal<string>('');
+  readonly editResumeInitialValues = signal<any>({});
+
+  readonly editResumeModalFields: readonly ModalFormField[] = [
+    {
+      key: 'email',
+      label: 'Email Address',
+      type: 'email',
+      placeholder: 'you@example.com',
+      required: true,
+      hint: "We'll send confirmation and updates to this email.",
+    },
+    {
+      key: 'resume',
+      label: 'Resume/CV',
+      type: 'file',
+      required: false,
+      accept: '.pdf,.doc,.docx',
+      maxFileSizeMb: 5,
+      hint: 'PDF, DOC, DOCX (max 5MB)',
+      uploadHandler: (file) => this.fileService.upload(file),
+    },
+  ];
 
   readonly userAvatarUrl = computed(() => {
     const profile = this.userProfile();
@@ -289,15 +316,19 @@ export class UserDashboardComponent implements OnInit {
     { label: 'Preferred role', value: 'Senior Frontend Developer', icon: 'briefcase-business' },
   ];
 
-  readonly jobs = toSignal(
+  readonly jobs = signal<any[]>([]);
+
+  loadAppliedJobs(): void {
+    if (typeof window === 'undefined' || !window.localStorage.getItem('accessToken')) {
+      return;
+    }
     this.jobService.getApplicationsByResume().pipe(
       map((responseList: any[]) =>
         responseList
-          // Lọc theo thuộc tính active nằm bên trong đối tượng job
           .filter((item) => item.job && item.job.active)
-          // Ánh xạ dữ liệu từ đối tượng job bên trong
           .map((item) => ({
             id: item.job.id,
+            resumeId: item.resumeId,
             logoUrl: item.job.company?.logo
               ? `${API_ENDPOINTS.companies.logoBase}${item.job.company.logo}`
               : undefined,
@@ -309,8 +340,15 @@ export class UserDashboardComponent implements OnInit {
             createdAt: this.formatDate(item.job.createdAt),
           })),
       ),
-    ),
-  );
+    ).subscribe({
+      next: (data) => {
+        this.jobs.set(data);
+      },
+      error: (err) => {
+        console.error('Error loading applied jobs:', err);
+      }
+    });
+  }
 
   readonly userProfile = signal<UserProfile | null>(null);
 
@@ -407,6 +445,7 @@ export class UserDashboardComponent implements OnInit {
     }
 
     this.loadSavedJobs();
+    this.loadAppliedJobs();
 
     this.authService.getAccount().pipe(
       switchMap((account) => {
@@ -492,9 +531,71 @@ export class UserDashboardComponent implements OnInit {
     });
   }
 
+  onEditResume(resumeId: number): void {
+    this.editingResumeId.set(resumeId);
+    this.resumeService.getById(resumeId).subscribe({
+      next: (res) => {
+        const data = res.data || res;
+        this.editingResumeOldUrl.set(data.url);
+        this.editResumeInitialValues.set({
+          email: data.email,
+          resume: data.url
+        });
+        this.isEditResumeModalOpen.set(true);
+      },
+      error: (err) => {
+        console.error('Error fetching resume details:', err);
+        this.toastService.error('Failed to fetch resume details');
+      }
+    });
+  }
 
+  onCloseEditResumeModal(): void {
+    this.isEditResumeModalOpen.set(false);
+    this.editingResumeId.set(null);
+    this.editingResumeOldUrl.set('');
+    this.editResumeInitialValues.set({});
+  }
 
+  onEditResumeSubmit(event: ModalFormSubmitEvent): void {
+    const resumeId = this.editingResumeId();
+    if (!resumeId) return;
 
+    const email = event.values['email'] as string;
+    const newResumeUrl = event.uploadedFiles['resume'] as string;
+    const oldResumeUrl = this.editingResumeOldUrl();
 
+    const updatedData = {
+      id: resumeId,
+      email: email.trim(),
+      url: newResumeUrl || oldResumeUrl,
+    };
 
+    this.resumeService.update(updatedData).subscribe({
+      next: () => {
+        this.isEditResumeModalOpen.set(false);
+        this.toastService.success('Application updated successfully');
+        this.loadAppliedJobs();
+      },
+      error: (err) => {
+        console.error('Error updating resume:', err);
+        this.toastService.error(err.error?.message || 'Failed to update application');
+      }
+    });
+  }
+
+  onDeleteResume(resumeId: number): void {
+    if (confirm('Are you sure you want to delete this application?')) {
+      this.resumeService.delete(resumeId).subscribe({
+        next: () => {
+          this.toastService.success('Application deleted successfully');
+          this.loadAppliedJobs();
+        },
+        error: (err) => {
+          console.error('Error deleting resume:', err);
+          this.toastService.error('Failed to delete application');
+        }
+      });
+    }
+  }
 }

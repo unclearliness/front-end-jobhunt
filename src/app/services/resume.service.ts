@@ -11,7 +11,9 @@ export interface CreateResumeRequest {
 }
 export interface UpdateResumeRequest {
   id: number;
-  status: string,
+  status?: string;
+  email?: string;
+  url?: string;
 }
 
 @Injectable({
@@ -26,12 +28,22 @@ export class ResumeService {
   update(body: UpdateResumeRequest): Observable<unknown> {
     return this.http.put(API_ENDPOINTS.resumes.update, body);
   }
-  getByHr(page: number = 0, size: number = 10): Observable<any> {
+  getById(id: number): Observable<any> {
+    return this.http.get<any>(`${API_ENDPOINTS.resumes.create}/${id}`);
+  }
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${API_ENDPOINTS.resumes.create}/${id}`);
+  }
+  getByHr(page: number = 0, size: number = 10, filter?: string): Observable<any> {
+    const params: any = {
+      page: page.toString(),
+      size: size.toString()
+    };
+    if (filter) {
+      params.filter = filter;
+    }
     return this.http.get<any>(API_ENDPOINTS.resumes.byHr, {
-      params: {
-        page: page.toString(),
-        size: size.toString()
-      }
+      params
     });
   }
 

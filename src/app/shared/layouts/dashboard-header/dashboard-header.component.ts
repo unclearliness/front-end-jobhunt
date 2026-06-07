@@ -34,6 +34,21 @@ export class DashboardHeaderComponent implements OnInit {
     return '/user-dashboard';
   });
 
+  readonly isHr = computed(() => {
+    const u = this.user();
+    return u ? u.role.toLowerCase().includes('hr') : false;
+  });
+
+  readonly brandLink = computed(() => {
+    const u = this.user();
+    if (!u) return '/dashboard';
+    const role = u.role.toLowerCase();
+    if (role.includes('hr')) {
+      return '/hr-dashboard';
+    }
+    return '/dashboard';
+  });
+
   ngOnInit(): void {
     if (typeof window !== 'undefined' && window.localStorage.getItem('accessToken')) {
       this.authService.getAccount().subscribe({

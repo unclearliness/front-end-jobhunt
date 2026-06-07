@@ -110,6 +110,14 @@
               [routerLink]="['/jobs', application.id]">
               <i-lucide class="icon-eye" name="eye" aria-hidden="true" />
             </button>
+            <button class="icon-button" type="button" aria-label="Edit application"
+              (click)="onEditResume(application.resumeId)">
+              <i-lucide name="edit" aria-hidden="true" />
+            </button>
+            <button class="icon-button" type="button" aria-label="Delete application"
+              (click)="onDeleteResume(application.resumeId)">
+              <i-lucide name="trash-2" aria-hidden="true" />
+            </button>
           </article>
           }
         </div>
@@ -267,4 +275,9 @@
 <app-modal-form [open]="isApplyModalOpen()" title="Edit Personal Information" subtitle="Update your profile details"
   submitLabel="Save Changes" cancelLabel="Cancel" [fields]="editProfileFields" [initialValues]="profileInitialValues()"
   (closed)="onCloseModal()" (submitted)="onEditProfileSubmit($event)">
+</app-modal-form>
+
+<app-modal-form [open]="isEditResumeModalOpen()" title="Edit Application" subtitle="Update your application details"
+  submitLabel="Save Changes" cancelLabel="Cancel" [fields]="editResumeModalFields" [initialValues]="editResumeInitialValues()"
+  (closed)="onCloseEditResumeModal()" (submitted)="onEditResumeSubmit($event)">
 </app-modal-form>

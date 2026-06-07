@@ -224,70 +224,53 @@
       </section>
       }
 
-      @case ('roles') {
-      <section class="dashboard-frame dashboard-frame--roles" id="frame-admin-roles"
-        aria-labelledby="frame-admin-roles-title">
+      @case ('skills') {
+      <section class="dashboard-frame dashboard-frame--skills" id="frame-admin-skills"
+        aria-labelledby="frame-admin-skills-title">
         <header class="frame-header frame-header--with-action">
           <div>
-            <h1 id="frame-admin-roles-title">Roles</h1>
-            <p>Manage platform role definitions and role membership</p>
+            <h1 id="frame-admin-skills-title">Skills</h1>
+            <p>Manage platform skills database</p>
           </div>
-          <app-button variant="primary" size="compact">Create Role</app-button>
+          <app-button variant="primary" size="compact" (buttonClick)="onOpenAddSkill()">Add Skill</app-button>
         </header>
 
-        <div class="role-grid">
-          @for (role of roles; track role.name) {
-          <article class="role-card">
-            <header>
-              <div class="role-icon" aria-hidden="true">
-                <i-lucide name="user-check" />
-              </div>
-              <div>
-                <h2>{{ role.name }}</h2>
-                <p>{{ role.description }}</p>
-              </div>
-            </header>
-            <div class="role-meta">
-              <span>{{ role.users }} users</span>
-              <span>{{ role.permissions }} permissions</span>
-            </div>
-            <footer>
-              <app-button variant="outline" size="compact" [fullWidth]="true">Manage Role</app-button>
-            </footer>
-          </article>
-          }
+        <div class="frame-toolbar">
+          <label class="search-control">
+            <i-lucide name="search" aria-hidden="true" />
+            <input #skillSearchInput type="search" placeholder="Search skills" aria-label="Search skills"
+              (keyup.enter)="onSearchSkills(skillSearchInput.value)" />
+          </label>
         </div>
-      </section>
-      }
 
-      @case ('permissions') {
-      <section class="dashboard-frame dashboard-frame--permissions" id="frame-admin-permissions"
-        aria-labelledby="frame-admin-permissions-title">
-        <header class="frame-header frame-header--with-action">
-          <div>
-            <h1 id="frame-admin-permissions-title">Permissions</h1>
-            <p>Configure access controls for admin, HR, and user workflows</p>
+        <div class="data-list">
+          @for (skill of skills(); track skill.id) {
+          <article class="data-row">
+            <div class="company-mark" aria-hidden="true">
+              <i-lucide name="clipboard-list" />
+            </div>
+            <div class="data-row__main">
+              <h2>{{ skill.name }}</h2>
+              <small>ID: {{ skill.id }}</small>
+            </div>
+            <div class="row-actions">
+              <button class="icon-button" type="button" aria-label="Edit skill" (click)="onOpenEditSkill(skill)">
+                <i-lucide name="edit" aria-hidden="true" />
+              </button>
+              <button class="icon-button icon-button--danger" type="button" aria-label="Delete skill" (click)="onDeleteSkill(skill.id)">
+                <i-lucide name="trash-2" aria-hidden="true" />
+              </button>
+            </div>
+          </article>
+          } @empty {
+          <div class="empty-state">
+            <p>No skills found.</p>
           </div>
-          <app-button variant="primary" size="compact">Save Changes</app-button>
-        </header>
-
-        <div class="permission-list">
-          @for (permission of permissions; track permission.name) {
-          <article class="permission-row">
-            <div class="permission-row__main">
-              <i-lucide name="shield-check" aria-hidden="true" />
-              <span>
-                <strong>{{ permission.name }}</strong>
-                <small>{{ permission.description }}</small>
-              </span>
-            </div>
-            <label class="switch">
-              <input type="checkbox" [checked]="permission.enabled" />
-              <span></span>
-            </label>
-          </article>
           }
         </div>
+
+        <app-pagination [currentPage]="skillCurrentPage()" [totalPages]="skillTotalPages()" [totalItems]="skillTotalItems()"
+          [pageSize]="skillPageSize()" (pageChange)="onSkillPageChange($event)" />
       </section>
       }
       }

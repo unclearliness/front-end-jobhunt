@@ -1,6 +1,6 @@
 <header class="dashboard-header">
   <div class="dashboard-header__container">
-    <a class="brand" routerLink="/dashboard" aria-label="JobHunter home">
+    <a class="brand" [routerLink]="brandLink()" aria-label="JobHunter home">
       <span class="brand__icon" aria-hidden="true">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -13,11 +13,13 @@
     </a>
 
     <nav class="dashboard-nav" aria-label="Primary navigation">
-      @if (user() && dashboardLink()) {
-      <a class="dashboard-nav__link" [routerLink]="dashboardLink()">My Dashboard</a>
+      @if (!isHr()) {
+        @if (user() && dashboardLink()) {
+        <a class="dashboard-nav__link" [routerLink]="dashboardLink()">My Dashboard</a>
+        }
+        <a class="dashboard-nav__link" routerLink="/find-jobs">Find Jobs</a>
+        <a class="dashboard-nav__link" routerLink="/companies">Companies</a>
       }
-      <a class="dashboard-nav__link" routerLink="/find-jobs">Find Jobs</a>
-      <a class="dashboard-nav__link" routerLink="/companies">Companies</a>
     </nav>
 
     <div class="dashboard-actions">

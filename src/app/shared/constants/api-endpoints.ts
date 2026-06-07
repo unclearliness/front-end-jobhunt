@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
     byResume: `${API_BASE_URL}/jobs/by-resume`,
     byHr: `${API_BASE_URL}/jobs/by-hr`,
     delete: (id: number | string) => `${API_BASE_URL}/jobs/${id}`,
+    byCompany: (id: number | string) => `${API_BASE_URL}/jobs/by-company/${id}`,
 
 
   },

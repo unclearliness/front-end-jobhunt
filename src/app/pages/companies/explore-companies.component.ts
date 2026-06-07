@@ -135,11 +135,13 @@ export class ExploreCompaniesComponent {
     {
       title: 'Industry',
       options: [
-        { label: 'Software Development', checked: false },
-        { label: 'Cloud Infrastructure', checked: false },
-        { label: 'Fintech', checked: false },
-        { label: 'HealthTech', checked: false },
-        { label: 'Logistics Technology', checked: false },
+        { label: 'IT_SOFTWARE', checked: false },
+        { label: 'FINANCE_BANKING', checked: false },
+        { label: 'E_COMMERCE', checked: false },
+        { label: 'MARKETING_MEDIA', checked: false },
+        { label: 'EDUCATION', checked: false },
+        { label: 'HEALTHCARE', checked: false },
+        { label: 'OTHER', checked: false },
       ],
     },
     {

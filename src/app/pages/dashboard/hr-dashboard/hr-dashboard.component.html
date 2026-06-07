@@ -214,7 +214,8 @@
         <div class="frame-toolbar">
           <label class="search-control">
             <i-lucide name="search" aria-hidden="true" />
-            <input type="search" placeholder="Search job postings" aria-label="Search job postings" />
+            <input type="search" placeholder="Search job postings" aria-label="Search job postings"
+              [value]="jobSearchQuery()" (input)="onJobSearch($event)" />
           </label>
 
         </div>
@@ -266,7 +267,8 @@
         <div class="frame-toolbar">
           <label class="search-control">
             <i-lucide name="search" aria-hidden="true" />
-            <input type="search" placeholder="Search applicants" aria-label="Search applicants" />
+            <input type="search" placeholder="Search applicants" aria-label="Search applicants"
+              [value]="applicantSearchQuery()" (input)="onApplicantSearch($event)" />
           </label>
           <select class="select-control" aria-label="Filter applicants">
             <option>All Stages</option>
@@ -352,7 +354,16 @@
 
               <label class="field">
                 <span>Industry *</span>
-                <input type="text" formControlName="industry" placeholder="e.g. Software Engineering" />
+                <select formControlName="industry" class="select-control">
+                  <option value="" disabled>Select Industry</option>
+                  <option value="IT_SOFTWARE">IT Software</option>
+                  <option value="FINANCE_BANKING">Finance & Banking</option>
+                  <option value="E_COMMERCE">E-Commerce</option>
+                  <option value="MARKETING_MEDIA">Marketing & Media</option>
+                  <option value="EDUCATION">Education</option>
+                  <option value="HEALTHCARE">Healthcare</option>
+                  <option value="OTHER">Other</option>
+                </select>
                 <app-field-error [control]="companyForm.get('industry')" fieldName="Industry"></app-field-error>
               </label>
 
@@ -475,6 +486,86 @@
         }
       </section>
       }
+
+      @case ('profile') {
+      <section class="dashboard-frame dashboard-frame--profile" id="frame-hr-profile"
+        aria-labelledby="frame-hr-profile-title">
+        <header class="frame-header frame-header--with-action">
+          <div>
+            <h1 id="frame-hr-profile-title">Profile</h1>
+            <p>Keep your user account details and credentials updated</p>
+          </div>
+          <app-button variant="primary" size="compact" (buttonClick)="onOpenUserProfileModal()">
+            <i-lucide name="edit" aria-hidden="true" />
+            Edit Profile
+          </app-button>
+        </header>
+
+        <div class="company-layout" style="display: flex; flex-direction: column; gap: 20px;">
+          <app-card ariaLabel="User profile summary">
+            <div class="company-summary" style="display: flex; align-items: center; gap: 16px;">
+              <div class="company-logo" aria-hidden="true" style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background-color: var(--muted); font-size: 32px; font-weight: bold; color: var(--muted-foreground);">
+                @if (userAvatarUrl()) {
+                <img [src]="userAvatarUrl()" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" />
+                } @else {
+                {{ userInitial() }}
+                }
+              </div>
+              <div>
+                <h2>{{ userProfile()?.name }}</h2>
+                <p style="color: var(--muted-foreground); margin: 4px 0 0;">{{ userProfile()?.email }}</p>
+              </div>
+            </div>
+          </app-card>
+
+          <app-card cardTitle="Contact & Details" titleId="hr-profile-details-title">
+            @if (userProfile(); as profile) {
+            <div class="detail-grid">
+              <div class="detail-item">
+                <i-lucide name="mail" aria-hidden="true" />
+                <span>
+                  <small>Email Address</small>
+                  <strong>{{ profile.email }}</strong>
+                </span>
+              </div>
+              <div class="detail-item">
+                <i-lucide name="user" aria-hidden="true" />
+                <span>
+                  <small>Full Name</small>
+                  <strong>{{ profile.name }}</strong>
+                </span>
+              </div>
+              <div class="detail-item">
+                <i-lucide name="calendar-check" aria-hidden="true" />
+                <span>
+                  <small>Age</small>
+                  <strong>{{ profile.age || 'Not updated' }}</strong>
+                </span>
+              </div>
+              <div class="detail-item">
+                <i-lucide name="user" aria-hidden="true" />
+                <span>
+                  <small>Gender</small>
+                  <strong>{{ profile.gender || 'Not updated' }}</strong>
+                </span>
+              </div>
+              <div class="detail-item">
+                <i-lucide name="map-pin" aria-hidden="true" />
+                <span>
+                  <small>Address</small>
+                  <strong>{{ profile.address || 'Not updated' }}</strong>
+                </span>
+              </div>
+            </div>
+            } @else {
+            <div style="padding: 16px; text-align: center; color: var(--muted-foreground);">
+              Loading personal details...
+            </div>
+            }
+          </app-card>
+        </div>
+      </section>
+      }
       }
     </div>
   </div>
@@ -484,6 +575,11 @@
   subtitle="Update your business details and corporate logo" submitLabel="Save Changes" cancelLabel="Cancel"
   [fields]="editCompanyFields" [initialValues]="company()" (closed)="onCloseModal()"
   (submitted)="onEditCompanySubmit($event)">
+</app-modal-form>
+
+<app-modal-form [open]="isUserProfileModalOpen()" title="Edit Personal Information" subtitle="Update your profile details"
+  submitLabel="Save Changes" cancelLabel="Cancel" [fields]="editProfileFields" [initialValues]="profileInitialValues()"
+  (closed)="onCloseUserProfileModal()" (submitted)="onEditUserProfileSubmit($event)">
 </app-modal-form>
 
 @if (isJobModalOpen()) {
@@ -523,6 +619,16 @@
             <option value="SENIOR">SENIOR</option>
           </select>
           <app-field-error [control]="jobModalForm.get('level')" fieldName="Level"></app-field-error>
+        </label>
+
+        <!-- Active Status -->
+        <label class="field">
+          <span>Active Status *</span>
+          <select formControlName="active" class="select-control">
+            <option [value]="true">Active</option>
+            <option [value]="false">Inactive</option>
+          </select>
+          <app-field-error [control]="jobModalForm.get('active')" fieldName="Active Status"></app-field-error>
         </label>
 
         <!-- Location -->

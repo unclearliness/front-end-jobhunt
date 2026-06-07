@@ -1,15 +1,19 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Location } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   ArrowLeft,
+  DollarSign,
   LUCIDE_ICONS,
   LucideAngularModule,
   LucideIconProvider,
+  MapPin,
 } from 'lucide-angular';
-import { catchError, map, of, startWith, switchMap } from 'rxjs';
+import { catchError, forkJoin, map, of, startWith, switchMap } from 'rxjs';
 import { CompanyApi, CompanyService } from '../../services/company.service';
+import { JobService } from '../../services/job.service';
+import { AppBadgeComponent } from '../../shared/components/app-badge/app-badge.component';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import {
@@ -36,6 +40,7 @@ interface CompanyDetailState {
   readonly companyInfoRows: readonly QuickStatItem[];
   readonly quickStats: readonly QuickStatItem[];
   readonly sections: readonly CompanySection[];
+  readonly jobs: readonly any[];
 }
 
 const INITIAL_STATE: CompanyDetailState = {
@@ -48,11 +53,13 @@ const INITIAL_STATE: CompanyDetailState = {
   companyInfoRows: [],
   quickStats: [],
   sections: [],
+  jobs: [],
 };
 
 @Component({
   selector: 'app-company-detail',
   imports: [
+    AppBadgeComponent,
     AppButtonComponent,
     AppCardComponent,
     CompanyInfoComponent,
@@ -65,7 +72,7 @@ const INITIAL_STATE: CompanyDetailState = {
     {
       provide: LUCIDE_ICONS,
       multi: true,
-      useValue: new LucideIconProvider({ ArrowLeft }),
+      useValue: new LucideIconProvider({ ArrowLeft, DollarSign, MapPin }),
     },
   ],
   templateUrl: './company-detail.component.html',
@@ -75,6 +82,8 @@ const INITIAL_STATE: CompanyDetailState = {
 export class CompanyDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly companyService = inject(CompanyService);
+  private readonly jobService = inject(JobService);
+  private readonly router = inject(Router);
   private readonly location = inject(Location);
 
   onBack(event: Event): void {
@@ -94,8 +103,16 @@ export class CompanyDetailComponent {
           });
         }
 
-        return this.companyService.getById(id).pipe(
-          map((company) => this.createDetailState(company)),
+        return forkJoin({
+          company: this.companyService.getById(id),
+          jobsResponse: this.jobService.getByCompany(id).pipe(
+            catchError(() => of({ data: { result: [] } }))
+          )
+        }).pipe(
+          map(({ company, jobsResponse }) => {
+            const jobs = (jobsResponse?.data?.result ?? jobsResponse?.data ?? []) as any[];
+            return this.createDetailState(company, jobs);
+          }),
           catchError(() =>
             of({
               ...INITIAL_STATE,
@@ -112,7 +129,24 @@ export class CompanyDetailComponent {
 
   onFollowCompany(): void {}
 
-  private createDetailState(company: CompanyApi): CompanyDetailState {
+  onViewJobDetail(jobId: number): void {
+    void this.router.navigate(['/jobs', jobId]);
+  }
+
+  formatCurrency(value: number): string {
+    return `${new Intl.NumberFormat('vi-VN').format(value)} VND`;
+  }
+
+  formatLevel(level: string): string {
+    if (!level) return '';
+    return level
+      .toLowerCase()
+      .split(/[_\s]+/)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  }
+
+  private createDetailState(company: CompanyApi, jobs: readonly any[]): CompanyDetailState {
     return {
       isLoading: false,
       errorMessage: null,
@@ -142,6 +176,7 @@ export class CompanyDetailComponent {
           content: company.description,
         },
       ],
+      jobs,
     };
   }
 

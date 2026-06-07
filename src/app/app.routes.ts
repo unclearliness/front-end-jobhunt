@@ -1,8 +1,33 @@
-import { CanMatchFn, Routes } from '@angular/router';
+import { CanMatchFn, Routes, CanActivateFn, Router } from '@angular/router';
 import { roleGuard } from './guards/role.guard';
+import { inject } from '@angular/core';
+import { AuthService } from './services/auth.service';
+import { map, catchError, of } from 'rxjs';
 
 const hasAccessToken: CanMatchFn = () =>
   typeof window !== 'undefined' && !!window.localStorage.getItem('accessToken');
+
+const dashboardGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (typeof window === 'undefined' || !window.localStorage.getItem('accessToken')) {
+    return of(true);
+  }
+
+  return authService.getAccount().pipe(
+    map((account) => {
+      if (account && account.role) {
+        const role = account.role.name.toLowerCase();
+        if (role.includes('hr')) {
+          return router.createUrlTree(['/hr-dashboard']);
+        }
+      }
+      return true;
+    }),
+    catchError(() => of(true))
+  );
+};
 
 export const routes: Routes = [
   {
@@ -73,6 +98,7 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard',
+    canActivate: [dashboardGuard],
     loadComponent: () =>
       import('./pages/dashboard/dashboard-hero/dashboard-hero.component').then(
         (component) => component.DashboardHeroComponent,

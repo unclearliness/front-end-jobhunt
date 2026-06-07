@@ -29,6 +29,7 @@ import {
   ShieldCheck,
   Trash2,
   Upload,
+  User,
   UserCheck,
   Users,
   X,
@@ -45,9 +46,10 @@ import { ResumeService } from '../../../services/resume.service';
 import { SkillService } from '../../../services/skill.service';
 import { JobService } from '../../../services/job.service';
 import { AppPaginationComponent } from '../../../shared/components/app-pagination/app-pagination.component';
+import { UserService } from '../../../services/user.service';
 
 
-type HrDashboardFrameId = 'overview' | 'post-job' | 'my-jobs' | 'applicants' | 'company-profile';
+type HrDashboardFrameId = 'overview' | 'post-job' | 'my-jobs' | 'applicants' | 'company-profile' | 'profile';
 
 interface HrDashboardNavItem {
   readonly id: HrDashboardFrameId;
@@ -123,6 +125,7 @@ import { FieldErrorComponent } from '../../../shared/components/app-field-error/
         ShieldCheck,
         Trash2,
         Upload,
+        User,
         UserCheck,
         Users,
         X,
@@ -142,6 +145,7 @@ export class HrDashboardComponent implements OnInit {
   private readonly resumeService = inject(ResumeService);
   private readonly skillService = inject(SkillService);
   private readonly jobService = inject(JobService);
+  private readonly userService = inject(UserService);
 
 
   readonly company = signal<any>(null);
@@ -165,6 +169,8 @@ export class HrDashboardComponent implements OnInit {
   readonly pageSize = signal(10);
   readonly totalPages = signal(1);
   readonly totalItems = signal(0);
+  readonly jobSearchQuery = signal<string>('');
+  readonly applicantSearchQuery = signal<string>('');
 
   readonly isJobModalOpen = signal(false);
   readonly isEditMode = signal(false);
@@ -180,6 +186,7 @@ export class HrDashboardComponent implements OnInit {
     skills: [[] as number[], Validators.required],
     startDate: ['', Validators.required],
     endDate: ['', Validators.required],
+    active: [true, Validators.required],
   });
 
   readonly companyForm = this.fb.group({
@@ -202,6 +209,59 @@ export class HrDashboardComponent implements OnInit {
     skills: [[] as number[], Validators.required], // Chứa danh sách các id của skill được chọn
     startDate: ['', Validators.required],
     endDate: ['', Validators.required],
+  });
+
+  readonly userProfile = signal<any>(null);
+  readonly isUserProfileModalOpen = signal(false);
+
+  readonly userAvatarUrl = computed(() => {
+    const profile = this.userProfile();
+    return profile?.logo ? `${API_ENDPOINTS.companies.logoBase}${profile.logo}` : null;
+  });
+
+  readonly userInitial = computed(() => {
+    const name = this.userProfile()?.name || '';
+    return name.slice(0, 1).toUpperCase() || 'U';
+  });
+
+  readonly editProfileFields: readonly ModalFormField[] = [
+    { key: 'name', label: 'Full Name', type: 'text', required: true },
+    { key: 'email', label: 'Email Address', type: 'email', required: true },
+    { key: 'age', label: 'Age', type: 'text', required: true },
+    {
+      key: 'gender',
+      label: 'Gender',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'MALE', label: 'Male' },
+        { value: 'FEMALE', label: 'Female' },
+      ],
+    },
+    { key: 'address', label: 'Address', type: 'text', required: true },
+    {
+      key: 'logo',
+      label: 'Avatar',
+      type: 'file',
+      required: false,
+      accept: 'image/*',
+      maxFileSizeMb: 2,
+      hint: 'Upload JPG, PNG image (max 2MB)',
+      uploadHandler: (file) => this.fileService.upload(file)
+    }
+  ];
+
+  readonly profileInitialValues = computed(() => {
+    const profile = this.userProfile();
+    if (!profile) return {};
+    return {
+      name: profile.name,
+      email: profile.email,
+      age: profile.age,
+      gender: profile.gender,
+      address: profile.address,
+      logo: profile.logo || '',
+    };
   });
 
   readonly dashboardNavigation: readonly HrDashboardNavItem[] = [
@@ -239,6 +299,13 @@ export class HrDashboardComponent implements OnInit {
       icon: 'building-2',
       buttonId: 'button-hr-company-profile',
       frameId: 'frame-hr-company-profile',
+    },
+    {
+      id: 'profile',
+      label: 'Profile',
+      icon: 'user',
+      buttonId: 'button-hr-profile',
+      frameId: 'frame-hr-profile',
     },
   ];
 
@@ -325,7 +392,21 @@ export class HrDashboardComponent implements OnInit {
 
   readonly editCompanyFields: readonly ModalFormField[] = [
     { key: 'name', label: 'Company Name', type: 'text', required: true },
-    { key: 'industry', label: 'Industry', type: 'text', required: true },
+    {
+      key: 'industry',
+      label: 'Industry',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'IT_SOFTWARE', label: 'IT Software' },
+        { value: 'FINANCE_BANKING', label: 'Finance & Banking' },
+        { value: 'E_COMMERCE', label: 'E-Commerce' },
+        { value: 'MARKETING_MEDIA', label: 'Marketing & Media' },
+        { value: 'EDUCATION', label: 'Education' },
+        { value: 'HEALTHCARE', label: 'Healthcare' },
+        { value: 'OTHER', label: 'Other' },
+      ],
+    },
     { key: 'companySize', label: 'Company Size', type: 'text', required: true },
     { key: 'founded', label: 'Founded Year', type: 'text', required: true },
     { key: 'address', label: 'Address', type: 'text', required: true },
@@ -363,6 +444,16 @@ export class HrDashboardComponent implements OnInit {
     });
     this.authService.getAccount().subscribe({
       next: (account) => {
+        if (account) {
+          this.userService.getUserProfile(account.id).subscribe({
+            next: (profile) => {
+              this.userProfile.set(profile);
+            },
+            error: (err) => {
+              console.error('Error loading user profile:', err);
+            }
+          });
+        }
         if (account && account.company) {
           // 1. Gọi tiếp API lấy thông tin chi tiết công ty bằng company.id
           this.companyService.getById(account.company.id).subscribe({
@@ -419,6 +510,7 @@ export class HrDashboardComponent implements OnInit {
         this.company.set(newCompany);
         this.companyForm.reset();
         this.toastService.success('Company created successfully');
+        window.location.reload();
       },
       error: (err) => {
         console.error('Error creating company:', err);
@@ -462,6 +554,42 @@ export class HrDashboardComponent implements OnInit {
     this.isApplyModalOpen.set(false);
   }
 
+  onOpenUserProfileModal(): void {
+    this.isUserProfileModalOpen.set(true);
+  }
+
+  onCloseUserProfileModal(): void {
+    this.isUserProfileModalOpen.set(false);
+  }
+
+  onEditUserProfileSubmit(event: ModalFormSubmitEvent): void {
+    const currentProfile = this.userProfile();
+    if (!currentProfile) return;
+
+    const updatedData = {
+      id: currentProfile.id,
+      name: event.values['name'] as string,
+      email: event.values['email'] as string,
+      age: Number(event.values['age']),
+      gender: event.values['gender'] as string,
+      address: event.values['address'] as string,
+      logo: (event.uploadedFiles['logo'] as string) || currentProfile.logo,
+    };
+
+    this.userService.updateUserProfile(updatedData).subscribe({
+      next: (updatedProfile) => {
+        this.userProfile.set(updatedProfile);
+        this.authService.userLogo.set(updatedProfile.logo || null);
+        this.isUserProfileModalOpen.set(false);
+        this.toastService.success('Profile updated successfully');
+      },
+      error: (err) => {
+        console.error('Error updating profile:', err);
+        this.toastService.error('Failed to update profile');
+      }
+    });
+  }
+
   onEditCompanySubmit(event: ModalFormSubmitEvent): void {
     const currentCompany = this.company();
     if (!currentCompany) return;
@@ -494,7 +622,9 @@ export class HrDashboardComponent implements OnInit {
   }
 
   loadApplicants(): void {
-    this.resumeService.getByHr(0, 10).subscribe({
+    const query = this.applicantSearchQuery();
+    const filter = query ? `user.name ~ '${query}'` : undefined;
+    this.resumeService.getByHr(0, 10, filter).subscribe({
       next: (res) => {
         if (res && res.data && res.data.result) {
           this.applicants.set(res.data.result);
@@ -677,7 +807,9 @@ export class HrDashboardComponent implements OnInit {
   }
 
   loadJobs(): void {
-    this.jobService.getByHr(this.currentPage(), this.pageSize()).subscribe({
+    const query = this.jobSearchQuery();
+    const filter = query ? `name ~ '${query}'` : undefined;
+    this.jobService.getByHr(this.currentPage(), this.pageSize(), filter).subscribe({
       next: (res) => {
         const data = res?.data?.result || res || [];
         this.jobs.set(data);
@@ -692,6 +824,19 @@ export class HrDashboardComponent implements OnInit {
         this.toastService.error('Unable to load jobs list');
       }
     });
+  }
+
+  onJobSearch(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.jobSearchQuery.set(value);
+    this.currentPage.set(1);
+    this.loadJobs();
+  }
+
+  onApplicantSearch(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.applicantSearchQuery.set(value);
+    this.loadApplicants();
   }
 
   onPageChange(page: number): void {
@@ -721,7 +866,8 @@ export class HrDashboardComponent implements OnInit {
           description: jobDetail.description,
           skills: skillIds,
           startDate: this.formatDateForInput(jobDetail.startDate),
-          endDate: this.formatDateForInput(jobDetail.endDate)
+          endDate: this.formatDateForInput(jobDetail.endDate),
+          active: jobDetail.active
         });
         this.jobModalForm.disable();
         this.isJobModalOpen.set(true);
@@ -755,7 +901,8 @@ export class HrDashboardComponent implements OnInit {
           description: jobDetail.description,
           skills: skillIds,
           startDate: this.formatDateForInput(jobDetail.startDate),
-          endDate: this.formatDateForInput(jobDetail.endDate)
+          endDate: this.formatDateForInput(jobDetail.endDate),
+          active: jobDetail.active
         });
         this.jobModalForm.enable();
         this.isJobModalOpen.set(true);
@@ -800,7 +947,8 @@ export class HrDashboardComponent implements OnInit {
       company: {
         id: currentCompany.id
       },
-      skills: skillsPayload
+      skills: skillsPayload,
+      active: formValues.active === true || (formValues.active as any) === 'true',
     };
 
     this.jobService.update(payload).subscribe({

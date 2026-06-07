@@ -44,6 +44,46 @@
               }
             </div>
           </app-card>
+
+          <app-card [cardTitle]="'Open Positions (' + detailState().jobs.length + ')'" titleId="company-jobs-title">
+            <div class="company-jobs-list">
+              @for (job of detailState().jobs; track job.id) {
+              <div class="company-job-card">
+                <div class="company-job-card__header">
+                  <h3 class="company-job-card__title">{{ job.name }}</h3>
+                  <app-badge variant="outline">{{ formatLevel(job.level) }}</app-badge>
+                </div>
+
+                <div class="company-job-card__details">
+                  <div class="company-job-card__detail">
+                    <i-lucide class="company-job-card__icon" name="map-pin" aria-hidden="true" />
+                    <span>{{ job.location }}</span>
+                  </div>
+                  <div class="company-job-card__detail">
+                    <i-lucide class="company-job-card__icon" name="dollar-sign" aria-hidden="true" />
+                    <span>{{ formatCurrency(job.salary) }}</span>
+                  </div>
+                </div>
+
+                @if (job.skill?.length) {
+                <div class="company-job-card__skills">
+                  @for (skill of job.skill; track skill) {
+                  <app-badge variant="outline">{{ skill }}</app-badge>
+                  }
+                </div>
+                }
+
+                <div class="company-job-card__actions">
+                  <app-button variant="primary" [fullWidth]="true" (buttonClick)="onViewJobDetail(job.id)">
+                    View Details
+                  </app-button>
+                </div>
+              </div>
+              } @empty {
+              <p class="company-jobs-empty">No open positions currently available.</p>
+              }
+            </div>
+          </app-card>
           }
         </div>
 
